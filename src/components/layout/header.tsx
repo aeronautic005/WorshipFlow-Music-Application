@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Music, Radio } from "lucide-react"
+import { Music, Radio, User } from "lucide-react"
 
 export function Header() {
   return (
@@ -28,6 +28,13 @@ export function Header() {
           >
             <Radio className="h-3 w-3 animate-pulse text-red-400" />
             <span>Live Mode</span>
+          </Link>
+          <Link
+            href="/profile"
+            aria-label="User Profile"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <User className="h-4 w-4" />
           </Link>
         </div>
       </div>
