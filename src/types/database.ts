@@ -1,5 +1,24 @@
 export type UserRole = "admin" | "song_leader" | "member"
 
+export type InstrumentType =
+  | "Vocals"
+  | "Acoustic Guitar"
+  | "Electric Guitar"
+  | "Keyboard 1"
+  | "Keyboard 2"
+  | "Bass Guitar"
+  | "Drums"
+
+export const INSTRUMENTS: InstrumentType[] = [
+  "Vocals",
+  "Acoustic Guitar",
+  "Electric Guitar",
+  "Keyboard 1",
+  "Keyboard 2",
+  "Bass Guitar",
+  "Drums",
+]
+
 export type SongCategory = "joyful" | "worship"
 
 export type PracticeStatusType = "ready" | "needs_work" | "not_started"
@@ -12,8 +31,9 @@ export interface UserProfile {
   email: string
   phone?: string | null
   role: UserRole
-  instrument: string
+  instrument: InstrumentType | string
   vocal_range?: string | null
+  avatar_url?: string | null
   created_at?: string
   updated_at?: string
 }
