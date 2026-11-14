@@ -166,6 +166,36 @@ export async function getSetlistById(id: string): Promise<FullSetlist | null> {
   return all.find((s) => s.id === id) || null
 }
 
+export async function updateSetlistStatus(
+  setlistId: string,
+  status: SetlistStatus
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createClient()
+    const isPublishing = status === "published"
+
+    const { error } = await supabase
+      .from("setlists")
+      .update({
+        status,
+        published_at: isPublishing ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", setlistId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to update setlist status",
+    }
+  }
+}
+
 export async function createSetlist(
   setlistData: {
     service_date: string
