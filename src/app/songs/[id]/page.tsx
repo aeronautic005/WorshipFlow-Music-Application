@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { getSongById } from "@/lib/songs"
+import { getChordChart, generateDefaultChordChart } from "@/lib/chords"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -16,8 +17,14 @@ import {
   FileText,
   Music2,
   Loader2,
-  Share2,
+  FileCode,
+  Music,
 } from "lucide-react"
+
+const MUSICAL_KEYS = [
+  "C", "C#", "Db", "D", "D#", "Eb", "E",
+  "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"
+]
 
 export default function SongDetailPage() {
   const params = useParams()
@@ -26,13 +33,26 @@ export default function SongDetailPage() {
 
   const [song, setSong] = useState<Song | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<"chords" | "lyrics">("chords")
+  const [selectedKey, setSelectedKey] = useState<string>("G")
+  const [chordContent, setChordContent] = useState<string>("")
 
   useEffect(() => {
     async function loadSong() {
       if (!songId) return
       try {
         const data = await getSongById(songId)
-        setSong(data)
+        if (data) {
+          setSong(data)
+          setSelectedKey(data.original_key || "G")
+
+          const chart = await getChordChart(songId, data.original_key || "G")
+          if (chart) {
+            setChordContent(chart.chart_content)
+          } else {
+            setChordContent(generateDefaultChordChart(data.title, data.original_key || "G"))
+          }
+        }
       } catch (err) {
         console.error("Failed to load song details:", err)
       } finally {
@@ -41,6 +61,17 @@ export default function SongDetailPage() {
     }
     loadSong()
   }, [songId])
+
+  const handleKeyChange = async (newKey: string) => {
+    setSelectedKey(newKey)
+    if (!song) return
+    const chart = await getChordChart(songId, newKey)
+    if (chart) {
+      setChordContent(chart.chart_content)
+    } else {
+      setChordContent(generateDefaultChordChart(song.title, newKey))
+    }
+  }
 
   if (loading) {
     return (
@@ -122,7 +153,7 @@ export default function SongDetailPage() {
             {/* Key & BPM Highlights */}
             <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
               <div className="px-3.5 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-mono font-bold text-sm">
-                Key of {song.original_key}
+                Orig. Key: {song.original_key}
               </div>
               {song.bpm && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
@@ -150,57 +181,123 @@ export default function SongDetailPage() {
           )}
         </div>
 
-        {/* Default Song Structure Blueprint Preview */}
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-3">
-          <div className="flex items-center justify-between border-b border-border/40 pb-2.5">
-            <h2 className="text-sm font-bold flex items-center gap-2">
-              <Music2 className="h-4 w-4 text-indigo-400" />
-              <span>Standard Arrangement Blueprint</span>
-            </h2>
-            <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">
-              Default Flow
-            </span>
-          </div>
+        {/* Tab Toggle: Chords vs. Structure & Lyrics */}
+        <div className="flex items-center gap-2 border-b border-border/60 pb-1">
+          <button
+            onClick={() => setActiveTab("chords")}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 transition-all ${
+              activeTab === "chords"
+                ? "border-indigo-500 text-indigo-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Music className="h-4 w-4" />
+            <span>Chord Chart</span>
+          </button>
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            {["Intro", "Verse 1", "Pre-Chorus", "Chorus", "Verse 2", "Chorus", "Bridge x4", "Chorus x2", "Outro"].map(
-              (section, index) => (
-                <div
-                  key={index}
-                  className="px-3 py-1.5 rounded-lg bg-background border border-border/80 text-xs font-semibold flex items-center gap-1.5"
-                >
-                  <span className="text-muted-foreground text-[10px] font-mono">{index + 1}</span>
-                  <span>{section}</span>
-                </div>
-              )
-            )}
-          </div>
-          <p className="text-[11px] text-muted-foreground">
-            This structure is referenced during home practice and rehearsal to ensure no bridge or chorus is skipped.
-          </p>
+          <button
+            onClick={() => setActiveTab("lyrics")}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 transition-all ${
+              activeTab === "lyrics"
+                ? "border-indigo-500 text-indigo-400"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <FileText className="h-4 w-4" />
+            <span>Structure & Lyrics</span>
+          </button>
         </div>
 
-        {/* Lyrics Section */}
-        {song.lyrics ? (
-          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
-              <FileText className="h-4 w-4 text-indigo-400" />
-              <h2 className="text-sm font-bold">Lyrics</h2>
+        {/* Chords Tab */}
+        {activeTab === "chords" && (
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
+              <div className="flex items-center gap-2">
+                <FileCode className="h-4 w-4 text-indigo-400" />
+                <h2 className="text-sm font-bold">Chord Progression</h2>
+              </div>
+
+              {/* Key Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground font-medium">Viewing in Key:</span>
+                <select
+                  value={selectedKey}
+                  onChange={(e) => handleKeyChange(e.target.value)}
+                  className="h-8 px-2.5 rounded-lg border border-border/80 bg-background text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  {MUSICAL_KEYS.map((k) => (
+                    <option key={k} value={k}>
+                      {k} {k === song.original_key ? "(Original)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="whitespace-pre-line text-sm leading-relaxed text-foreground/90 font-sans font-normal pt-1">
-              {song.lyrics}
+
+            {/* Chord Chart Sheet Display */}
+            <div className="p-4 rounded-xl bg-background border border-border/80 overflow-x-auto">
+              <pre className="font-mono text-xs sm:text-sm leading-relaxed text-foreground whitespace-pre">
+                {chordContent}
+              </pre>
             </div>
           </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-border/80 bg-card/40 p-6 text-center space-y-2">
-            <FileText className="h-5 w-5 text-muted-foreground mx-auto" />
-            <p className="text-xs text-muted-foreground">No lyrics have been added yet for this song.</p>
-            <Link
-              href={`/songs/${song.id}/edit`}
-              className="text-xs text-indigo-400 hover:underline font-medium inline-block"
-            >
-              Add lyrics now
-            </Link>
+        )}
+
+        {/* Structure & Lyrics Tab */}
+        {activeTab === "lyrics" && (
+          <div className="space-y-6">
+            {/* Song Structure Blueprint Preview */}
+            <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-3">
+              <div className="flex items-center justify-between border-b border-border/40 pb-2.5">
+                <h2 className="text-sm font-bold flex items-center gap-2">
+                  <Music2 className="h-4 w-4 text-indigo-400" />
+                  <span>Standard Arrangement Blueprint</span>
+                </h2>
+                <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                  Default Flow
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                {[
+                  "Intro",
+                  "Verse 1",
+                  "Pre-Chorus",
+                  "Chorus",
+                  "Verse 2",
+                  "Chorus",
+                  "Bridge x4",
+                  "Chorus x2",
+                  "Outro",
+                ].map((section, index) => (
+                  <div
+                    key={index}
+                    className="px-3 py-1.5 rounded-lg bg-background border border-border/80 text-xs font-semibold flex items-center gap-1.5"
+                  >
+                    <span className="text-muted-foreground text-[10px] font-mono">{index + 1}</span>
+                    <span>{section}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lyrics Section */}
+            {song.lyrics ? (
+              <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-3">
+                <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
+                  <FileText className="h-4 w-4 text-indigo-400" />
+                  <h2 className="text-sm font-bold">Lyrics</h2>
+                </div>
+                <div className="whitespace-pre-line text-sm leading-relaxed text-foreground/90 font-sans font-normal pt-1">
+                  {song.lyrics}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-border/80 bg-card/40 p-6 text-center space-y-2">
+                <FileText className="h-5 w-5 text-muted-foreground mx-auto" />
+                <p className="text-xs text-muted-foreground">No lyrics have been added yet for this song.</p>
+              </div>
+            )}
           </div>
         )}
       </div>
