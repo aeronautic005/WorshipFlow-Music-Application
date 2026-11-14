@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/app-shell"
 import { getSongById } from "@/lib/songs"
 import { getChordChart, generateDefaultChordChart } from "@/lib/chords"
 import { transposeChordChart } from "@/lib/transpose"
+import { CapoCalculator } from "@/components/song/capo-calculator"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -246,6 +247,8 @@ export default function SongDetailPage() {
                   <Edit3 className="h-3 w-3" />
                   <span>Edit Chords</span>
                 </Link>
+
+                <CapoCalculator currentKey={selectedKey} />
               </div>
             </div>
 
