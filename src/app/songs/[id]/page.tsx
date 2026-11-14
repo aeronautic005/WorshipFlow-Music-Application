@@ -6,6 +6,7 @@ import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { getSongById } from "@/lib/songs"
 import { getChordChart, generateDefaultChordChart } from "@/lib/chords"
+import { transposeChordChart } from "@/lib/transpose"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -35,6 +36,7 @@ export default function SongDetailPage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<"chords" | "lyrics">("chords")
   const [selectedKey, setSelectedKey] = useState<string>("G")
+  const [baseChart, setBaseChart] = useState<string>("")
   const [chordContent, setChordContent] = useState<string>("")
 
   useEffect(() => {
@@ -47,11 +49,12 @@ export default function SongDetailPage() {
           setSelectedKey(data.original_key || "G")
 
           const chart = await getChordChart(songId, data.original_key || "G")
-          if (chart) {
-            setChordContent(chart.chart_content)
-          } else {
-            setChordContent(generateDefaultChordChart(data.title, data.original_key || "G"))
-          }
+          const content = chart
+            ? chart.chart_content
+            : generateDefaultChordChart(data.title, data.original_key || "G")
+
+          setBaseChart(content)
+          setChordContent(content)
         }
       } catch (err) {
         console.error("Failed to load song details:", err)
@@ -65,11 +68,15 @@ export default function SongDetailPage() {
   const handleKeyChange = async (newKey: string) => {
     setSelectedKey(newKey)
     if (!song) return
-    const chart = await getChordChart(songId, newKey)
-    if (chart) {
-      setChordContent(chart.chart_content)
+
+    // Check if an explicit custom chart exists in DB for this target key
+    const customChart = await getChordChart(songId, newKey)
+    if (customChart) {
+      setChordContent(customChart.chart_content)
     } else {
-      setChordContent(generateDefaultChordChart(song.title, newKey))
+      // Auto-transpose dynamically in real time
+      const transposed = transposeChordChart(baseChart, song.original_key, newKey)
+      setChordContent(transposed)
     }
   }
 
