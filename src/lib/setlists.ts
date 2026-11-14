@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client"
 import type { Setlist, SetlistSong, SetlistStatus, SongCategory } from "@/types/database"
+import { notifySetlistPublished } from "./notifications"
 
 export interface FullSetlist extends Setlist {
   song_leader_name?: string
@@ -185,6 +186,17 @@ export async function updateSetlistStatus(
 
     if (error) {
       return { success: false, error: error.message }
+    }
+
+    if (isPublishing) {
+      const setlist = await getSetlistById(setlistId)
+      if (setlist) {
+        await notifySetlistPublished({
+          service_date: setlist.service_date,
+          song_leader_name: setlist.song_leader_name,
+          song_count: setlist.songs?.length || 0,
+        })
+      }
     }
 
     return { success: true }

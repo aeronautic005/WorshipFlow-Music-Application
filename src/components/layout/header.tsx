@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Music, Radio, User } from "lucide-react"
+import { NotificationBell } from "./notification-bell"
 
 export function Header() {
   return (
@@ -29,6 +30,7 @@ export function Header() {
             <Radio className="h-3 w-3 animate-pulse text-red-400" />
             <span>Live Mode</span>
           </Link>
+          <NotificationBell />
           <Link
             href="/profile"
             aria-label="User Profile"
