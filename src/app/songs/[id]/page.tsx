@@ -217,7 +217,7 @@ export default function SongDetailPage() {
                 <h2 className="text-sm font-bold">Chord Progression</h2>
               </div>
 
-              {/* Key Selector */}
+              {/* Key Selector and Edit button */}
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground font-medium">Viewing in Key:</span>
                 <select
@@ -231,6 +231,14 @@ export default function SongDetailPage() {
                     </option>
                   ))}
                 </select>
+
+                <Link
+                  href={`/songs/${song.id}/chords/edit`}
+                  className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border/80 text-xs font-medium hover:bg-muted transition-colors"
+                >
+                  <Edit3 className="h-3 w-3" />
+                  <span>Edit Chords</span>
+                </Link>
               </div>
             </div>
 
