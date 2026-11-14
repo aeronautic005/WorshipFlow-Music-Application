@@ -6,11 +6,8 @@ import {
   CheckCircle2,
   Radio,
   Sparkles,
-  ArrowRight,
-  Flame,
-  Heart,
-  User,
 } from "lucide-react"
+import { WeekAtAGlanceCard } from "@/components/setlist/week-at-a-glance"
 
 export default function Home() {
   return (
@@ -44,7 +41,7 @@ export default function Home() {
             </div>
             <div>
               <div className="font-semibold text-sm">Weekly Setlist</div>
-              <div className="text-xs text-muted-foreground">Nov 15 lineup</div>
+              <div className="text-xs text-muted-foreground">Lineup & archives</div>
             </div>
           </Link>
 
@@ -88,80 +85,8 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Current Setlist Preview Card */}
-        <div className="rounded-xl border border-border/60 bg-card p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500" />
-              <h2 className="font-semibold text-base">This Week&apos;s Lineup</h2>
-            </div>
-            <Link
-              href="/setlists"
-              className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-medium"
-            >
-              <span>View full setlist</span>
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg border border-border/40">
-            <div className="flex items-center gap-1.5 font-medium text-foreground">
-              <User className="h-3.5 w-3.5 text-blue-400" />
-              <span>Leader: <strong>France</strong></span>
-            </div>
-            <span className="text-border">•</span>
-            <div>Backup: <strong>Andrei</strong></div>
-            <span className="text-border">•</span>
-            <div>Drums: <strong>Aeron</strong></div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-background/60 border border-border/30 hover:border-indigo-500/30 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <span className="p-1 rounded bg-orange-500/10 text-orange-400">
-                  <Flame className="h-3.5 w-3.5" />
-                </span>
-                <div>
-                  <div className="text-sm font-medium">Thank God I&apos;m Free</div>
-                  <div className="text-[11px] text-muted-foreground">Fast / Joyful</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-0.5 rounded bg-muted font-mono font-medium">Key: G</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-background/60 border border-border/30 hover:border-indigo-500/30 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <span className="p-1 rounded bg-blue-500/10 text-blue-400">
-                  <Heart className="h-3.5 w-3.5" />
-                </span>
-                <div>
-                  <div className="text-sm font-medium">Jesus Be The Center</div>
-                  <div className="text-[11px] text-muted-foreground">Slow / Worship</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-0.5 rounded bg-muted font-mono font-medium">Key: D</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-background/60 border border-border/30 hover:border-indigo-500/30 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <span className="p-1 rounded bg-blue-500/10 text-blue-400">
-                  <Heart className="h-3.5 w-3.5" />
-                </span>
-                <div>
-                  <div className="text-sm font-medium">Shout To The Lord</div>
-                  <div className="text-[11px] text-muted-foreground">Slow / Worship</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs px-2 py-0.5 rounded bg-muted font-mono font-medium">Key: A</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Dynamic Week At A Glance Card */}
+        <WeekAtAGlanceCard />
       </div>
     </AppShell>
   )
