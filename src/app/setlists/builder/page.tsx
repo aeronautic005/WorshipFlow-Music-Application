@@ -6,6 +6,7 @@ import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { SongPickerModal } from "@/components/setlist/song-picker-modal"
 import { createSetlist } from "@/lib/setlists"
+import { getPreferredKeyForLeader } from "@/lib/song-leader-keys"
 import type { Song, SongCategory } from "@/types/database"
 import {
   ArrowLeft,
@@ -38,6 +39,7 @@ interface SelectedSetlistSong {
   original_key: string
   assigned_key: string
   reference_url: string
+  is_auto_filled?: boolean
 }
 
 function BuilderContent() {
@@ -64,15 +66,23 @@ function BuilderContent() {
     setModalOpen(true)
   }
 
-  const handleSelectSong = (song: Song) => {
+  const handleSelectSong = async (song: Song) => {
+    // Check key memory for this song leader
+    const rememberedKey = await getPreferredKeyForLeader(
+      songLeaderId,
+      song.id,
+      song.title
+    )
+
     const newEntry: SelectedSetlistSong = {
       song_id: song.id,
       title: song.title,
       artist: song.artist,
       category: modalCategory,
       original_key: song.original_key,
-      assigned_key: song.original_key, // Default to original key, can be altered
+      assigned_key: rememberedKey || song.original_key,
       reference_url: song.reference_url || "",
+      is_auto_filled: Boolean(rememberedKey),
     }
     setSelectedSongs((prev) => [...prev, newEntry])
   }
@@ -300,6 +310,11 @@ function BuilderContent() {
                           </option>
                         ))}
                       </select>
+                      {song.is_auto_filled && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+                          Auto-filled
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -413,6 +428,11 @@ function BuilderContent() {
                           </option>
                         ))}
                       </select>
+                      {song.is_auto_filled && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+                          Auto-filled
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1.5">
