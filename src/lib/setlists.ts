@@ -196,6 +196,39 @@ export async function updateSetlistStatus(
   }
 }
 
+export async function duplicateSetlist(
+  sourceSetlistId: string,
+  newServiceDate: string
+): Promise<{ success: boolean; data?: Setlist; error?: string }> {
+  try {
+    const source = await getSetlistById(sourceSetlistId)
+    if (!source) return { success: false, error: "Source setlist not found" }
+
+    const created = await createSetlist({
+      service_date: newServiceDate,
+      song_leader_id: source.song_leader_id,
+      backup_singer_id: source.backup_singer_id,
+      drummer_id: source.drummer_id,
+      status: "draft",
+      notes: source.notes ? `Cloned from ${source.service_date}: ${source.notes}` : null,
+      songs: (source.songs || []).map((s) => ({
+        song_id: s.song_id,
+        order_position: s.order_position,
+        assigned_key: s.assigned_key,
+        reference_url: s.reference_url,
+        category: s.category,
+      })),
+    })
+
+    return created
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to duplicate setlist",
+    }
+  }
+}
+
 export async function createSetlist(
   setlistData: {
     service_date: string

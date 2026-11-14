@@ -15,6 +15,7 @@ import {
   FileText,
   ArrowRight,
   Sparkles,
+  Copy,
 } from "lucide-react"
 
 // Helper to get upcoming Sunday date formatted as YYYY-MM-DD
@@ -106,6 +107,23 @@ export default function NewSetlistPage() {
             {error}
           </div>
         )}
+
+        {/* Quick Duplicate from Past Service Banner */}
+        <div className="flex items-center justify-between p-3.5 rounded-xl border border-indigo-500/20 bg-indigo-500/5 text-xs">
+          <div className="flex items-center gap-2">
+            <Copy className="h-4 w-4 text-indigo-400" />
+            <div>
+              <span className="font-semibold text-foreground">Want to clone last week&apos;s songs?</span>
+              <p className="text-[11px] text-muted-foreground">Duplicate all songs, keys, and arrangement blueprints into this new date.</p>
+            </div>
+          </div>
+          <Link
+            href="/setlists"
+            className="px-3 py-1.5 rounded-lg border border-border/80 bg-background text-[11px] font-semibold hover:bg-muted text-foreground transition-colors shrink-0"
+          >
+            Browse Past
+          </Link>
+        </div>
 
         {/* Setlist Setup Card */}
         <form onSubmit={handleNext} className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-5">
