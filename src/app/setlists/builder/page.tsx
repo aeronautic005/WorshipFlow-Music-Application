@@ -20,6 +20,9 @@ import {
   Loader2,
   Link as LinkIcon,
   AlertCircle,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react"
 
 const MUSICAL_KEYS = [
@@ -72,6 +75,49 @@ function BuilderContent() {
       reference_url: song.reference_url || "",
     }
     setSelectedSongs((prev) => [...prev, newEntry])
+  }
+
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return
+    setSelectedSongs((prev) => {
+      const copy = [...prev]
+      const temp = copy[index]
+      copy[index] = copy[index - 1]
+      copy[index - 1] = temp
+      return copy
+    })
+  }
+
+  const handleMoveDown = (index: number) => {
+    if (index === selectedSongs.length - 1) return
+    setSelectedSongs((prev) => {
+      const copy = [...prev]
+      const temp = copy[index]
+      copy[index] = copy[index + 1]
+      copy[index + 1] = temp
+      return copy
+    })
+  }
+
+  const handleDragStart = (index: number) => {
+    setDraggedIdx(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = (targetIndex: number) => {
+    if (draggedIdx === null || draggedIdx === targetIndex) return
+    setSelectedSongs((prev) => {
+      const copy = [...prev]
+      const [item] = copy.splice(draggedIdx, 1)
+      copy.splice(targetIndex, 0, item)
+      return copy
+    })
+    setDraggedIdx(null)
   }
 
   const handleRemoveSong = (index: number) => {
@@ -191,20 +237,51 @@ function BuilderContent() {
               .map(({ song, globalIdx }) => (
                 <div
                   key={globalIdx}
-                  className="p-3 rounded-xl border border-border/80 bg-card shadow-sm space-y-2"
+                  draggable
+                  onDragStart={() => handleDragStart(globalIdx)}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(globalIdx)}
+                  className={`p-3 rounded-xl border border-border/80 bg-card shadow-sm space-y-2 transition-all ${
+                    draggedIdx === globalIdx ? "opacity-40 border-indigo-500" : ""
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <span className="font-bold text-sm">{song.title}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{song.artist}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="cursor-grab text-muted-foreground hover:text-foreground">
+                        <GripVertical className="h-4 w-4" />
+                      </div>
+                      <span className="font-mono text-xs text-muted-foreground w-4">
+                        {globalIdx + 1}.
+                      </span>
+                      <span className="font-bold text-sm truncate">{song.title}</span>
+                      <span className="text-xs text-muted-foreground truncate">{song.artist}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSong(globalIdx)}
-                      className="p-1 rounded text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(globalIdx)}
+                        disabled={globalIdx === 0}
+                        className="p-1 rounded hover:bg-muted text-muted-foreground disabled:opacity-20"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(globalIdx)}
+                        disabled={globalIdx === selectedSongs.length - 1}
+                        className="p-1 rounded hover:bg-muted text-muted-foreground disabled:opacity-20"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSong(globalIdx)}
+                        className="p-1 rounded text-muted-foreground hover:text-destructive ml-1"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-border/40">
@@ -273,20 +350,51 @@ function BuilderContent() {
               .map(({ song, globalIdx }) => (
                 <div
                   key={globalIdx}
-                  className="p-3 rounded-xl border border-border/80 bg-card shadow-sm space-y-2"
+                  draggable
+                  onDragStart={() => handleDragStart(globalIdx)}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(globalIdx)}
+                  className={`p-3 rounded-xl border border-border/80 bg-card shadow-sm space-y-2 transition-all ${
+                    draggedIdx === globalIdx ? "opacity-40 border-indigo-500" : ""
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <span className="font-bold text-sm">{song.title}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{song.artist}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="cursor-grab text-muted-foreground hover:text-foreground">
+                        <GripVertical className="h-4 w-4" />
+                      </div>
+                      <span className="font-mono text-xs text-muted-foreground w-4">
+                        {globalIdx + 1}.
+                      </span>
+                      <span className="font-bold text-sm truncate">{song.title}</span>
+                      <span className="text-xs text-muted-foreground truncate">{song.artist}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSong(globalIdx)}
-                      className="p-1 rounded text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(globalIdx)}
+                        disabled={globalIdx === 0}
+                        className="p-1 rounded hover:bg-muted text-muted-foreground disabled:opacity-20"
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(globalIdx)}
+                        disabled={globalIdx === selectedSongs.length - 1}
+                        className="p-1 rounded hover:bg-muted text-muted-foreground disabled:opacity-20"
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSong(globalIdx)}
+                        className="p-1 rounded text-muted-foreground hover:text-destructive ml-1"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-border/40">
