@@ -81,6 +81,7 @@ export interface Setlist {
   drummer_id?: string | null
   status: SetlistStatus
   published_at?: string | null
+  notes?: string | null
   created_at?: string
   updated_at?: string
 }
