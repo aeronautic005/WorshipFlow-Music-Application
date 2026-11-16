@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
-import type { Song, SongCategory } from "@/types/database"
+import type { Song, SongCategory, SongSection } from "@/types/database"
 
 // Pre-seeded songs from the church worship team's active rotation
 export const DEFAULT_CHURCH_SONGS: Song[] = [
@@ -269,4 +269,11 @@ export async function deleteSong(id: string): Promise<{ success: boolean; error?
       error: err instanceof Error ? err.message : "Failed to delete song",
     }
   }
+}
+
+export async function updateSongStructure(
+  songId: string,
+  structure: SongSection[]
+): Promise<{ success: boolean; error?: string }> {
+  return updateSong(songId, { default_structure: structure })
 }

@@ -120,6 +120,13 @@ export default function SongDetailPage() {
 
           <div className="flex items-center gap-2">
             <Link
+              href={`/songs/${song.id}/structure`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors shadow-sm"
+            >
+              <Music2 className="h-3.5 w-3.5" />
+              <span>Structure Blueprint</span>
+            </Link>
+            <Link
               href={`/songs/${song.id}/edit`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/80 text-xs font-medium hover:bg-accent/50 transition-colors shadow-sm"
             >
