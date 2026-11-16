@@ -6,6 +6,7 @@ import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { getSetlistById, type FullSetlist } from "@/lib/setlists"
 import { SetlistStatusBadge } from "@/components/setlist/setlist-status-badge"
+import { StructureMap } from "@/components/structure/structure-map"
 import {
   ArrowLeft,
   Calendar,
@@ -164,54 +165,78 @@ export default function SetlistDetailPage() {
               </h2>
             </div>
 
-            <div className="space-y-2">
-              {joyfulSongs.map((song, idx) => (
-                <div
-                  key={song.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-orange-500/30 transition-all shadow-sm gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 font-mono font-bold text-xs shrink-0">
-                      {idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <Link
-                        href={`/songs/${song.song_id}`}
-                        className="font-bold text-sm hover:text-indigo-400 transition-colors truncate block"
-                      >
-                        {song.title}
-                      </Link>
-                      <span className="text-xs text-muted-foreground">{song.artist}</span>
+            <div className="space-y-3">
+              {joyfulSongs.map((song, idx) => {
+                const structure = song.custom_structure || song.default_structure
+                const isCustom = !!song.custom_structure
+
+                return (
+                  <div
+                    key={song.id}
+                    className="p-4 rounded-xl border border-border/60 bg-card hover:border-orange-500/30 transition-all shadow-sm space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 font-mono font-bold text-xs shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/songs/${song.song_id}`}
+                            className="font-bold text-sm hover:text-indigo-400 transition-colors truncate block"
+                          >
+                            {song.title}
+                          </Link>
+                          <span className="text-xs text-muted-foreground">{song.artist}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                        <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 font-mono font-bold text-xs border border-orange-500/20">
+                          Key: {song.assigned_key}
+                        </span>
+
+                        {song.reference_url && (
+                          <a
+                            href={song.reference_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
+                          >
+                            <Music2 className="h-3.5 w-3.5 text-red-400" />
+                            <span>Reference</span>
+                            <ExternalLink className="h-2.5 w-2.5 text-muted-foreground" />
+                          </a>
+                        )}
+
+                        <Link
+                          href={`/songs/${song.song_id}`}
+                          className="px-2.5 py-1 rounded-lg border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
+                        >
+                          Chords
+                        </Link>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
-                    <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 font-mono font-bold text-xs border border-orange-500/20">
-                      Key: {song.assigned_key}
-                    </span>
-
-                    {song.reference_url && (
-                      <a
-                        href={song.reference_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
-                      >
-                        <Music2 className="h-3.5 w-3.5 text-red-400" />
-                        <span>Reference</span>
-                        <ExternalLink className="h-2.5 w-2.5 text-muted-foreground" />
-                      </a>
+                    {/* Section Blueprint Bar */}
+                    {structure && structure.length > 0 && (
+                      <div className="pt-2 border-t border-border/40 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <span>Arrangement Blueprint</span>
+                            {isCustom && (
+                              <span className="px-1.5 py-0.2 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[9px] font-bold">
+                                Sunday Custom Flow
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <StructureMap sections={structure} size="sm" />
+                      </div>
                     )}
-
-                    <Link
-                      href={`/songs/${song.song_id}`}
-                      className="px-2.5 py-1 rounded-lg border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
-                    >
-                      Chords
-                    </Link>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -226,54 +251,78 @@ export default function SetlistDetailPage() {
               </h2>
             </div>
 
-            <div className="space-y-2">
-              {worshipSongs.map((song, idx) => (
-                <div
-                  key={song.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-blue-500/30 transition-all shadow-sm gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold text-xs shrink-0">
-                      {joyfulSongs.length + idx + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <Link
-                        href={`/songs/${song.song_id}`}
-                        className="font-bold text-sm hover:text-indigo-400 transition-colors truncate block"
-                      >
-                        {song.title}
-                      </Link>
-                      <span className="text-xs text-muted-foreground">{song.artist}</span>
+            <div className="space-y-3">
+              {worshipSongs.map((song, idx) => {
+                const structure = song.custom_structure || song.default_structure
+                const isCustom = !!song.custom_structure
+
+                return (
+                  <div
+                    key={song.id}
+                    className="p-4 rounded-xl border border-border/60 bg-card hover:border-blue-500/30 transition-all shadow-sm space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold text-xs shrink-0">
+                          {joyfulSongs.length + idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/songs/${song.song_id}`}
+                            className="font-bold text-sm hover:text-indigo-400 transition-colors truncate block"
+                          >
+                            {song.title}
+                          </Link>
+                          <span className="text-xs text-muted-foreground">{song.artist}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                        <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold text-xs border border-blue-500/20">
+                          Key: {song.assigned_key}
+                        </span>
+
+                        {song.reference_url && (
+                          <a
+                            href={song.reference_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
+                          >
+                            <Music2 className="h-3.5 w-3.5 text-red-400" />
+                            <span>Reference</span>
+                            <ExternalLink className="h-2.5 w-2.5 text-muted-foreground" />
+                          </a>
+                        )}
+
+                        <Link
+                          href={`/songs/${song.song_id}`}
+                          className="px-2.5 py-1 rounded-lg border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
+                        >
+                          Chords
+                        </Link>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
-                    <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold text-xs border border-blue-500/20">
-                      Key: {song.assigned_key}
-                    </span>
-
-                    {song.reference_url && (
-                      <a
-                        href={song.reference_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
-                      >
-                        <Music2 className="h-3.5 w-3.5 text-red-400" />
-                        <span>Reference</span>
-                        <ExternalLink className="h-2.5 w-2.5 text-muted-foreground" />
-                      </a>
+                    {/* Section Blueprint Bar */}
+                    {structure && structure.length > 0 && (
+                      <div className="pt-2 border-t border-border/40 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <span>Arrangement Blueprint</span>
+                            {isCustom && (
+                              <span className="px-1.5 py-0.2 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-bold">
+                                Sunday Custom Flow
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <StructureMap sections={structure} size="sm" />
+                      </div>
                     )}
-
-                    <Link
-                      href={`/songs/${song.song_id}`}
-                      className="px-2.5 py-1 rounded-lg border border-border/80 text-[11px] font-medium hover:bg-muted text-foreground transition-colors"
-                    >
-                      Chords
-                    </Link>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

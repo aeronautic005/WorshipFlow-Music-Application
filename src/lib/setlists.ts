@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
-import type { Setlist, SetlistSong, SetlistStatus, SongCategory } from "@/types/database"
+import type { Setlist, SetlistSong, SetlistStatus, SongCategory, SongSection } from "@/types/database"
 import { notifySetlistPublished } from "./notifications"
 
 export interface FullSetlist extends Setlist {
@@ -11,6 +11,7 @@ export interface FullSetlist extends Setlist {
     artist: string
     original_key: string
     bpm?: number | null
+    default_structure?: SongSection[] | null
   })[]
 }
 
@@ -41,6 +42,14 @@ export const DEFAULT_CHURCH_SETLISTS: FullSetlist[] = [
         category: "joyful",
         bpm: 128,
         reference_url: "https://www.youtube.com",
+        custom_structure: [
+          { id: "cs-1", type: "intro", name: "Intro", bars: 4, repeats: 1, notes: "Drums start high tempo" },
+          { id: "cs-2", type: "verse", name: "Verse 1", bars: 8, repeats: 1 },
+          { id: "cs-3", type: "chorus", name: "Chorus", bars: 8, repeats: 1 },
+          { id: "cs-4", type: "verse", name: "Verse 2", bars: 8, repeats: 1 },
+          { id: "cs-5", type: "chorus", name: "Chorus", bars: 8, repeats: 2, notes: "Full power" },
+          { id: "cs-6", type: "outro", name: "Outro", bars: 4, repeats: 1, notes: "Hit on 1 and hold" },
+        ],
       },
       {
         id: "ss-2",
@@ -54,6 +63,16 @@ export const DEFAULT_CHURCH_SETLISTS: FullSetlist[] = [
         category: "worship",
         bpm: 68,
         reference_url: "https://www.youtube.com",
+        custom_structure: [
+          { id: "cs-7", type: "intro", name: "Intro", bars: 4, repeats: 1, notes: "Keys pad only" },
+          { id: "cs-8", type: "verse", name: "Verse 1", bars: 8, repeats: 1 },
+          { id: "cs-9", type: "chorus", name: "Chorus", bars: 8, repeats: 1 },
+          { id: "cs-10", type: "verse", name: "Verse 2", bars: 8, repeats: 1 },
+          { id: "cs-11", type: "chorus", name: "Chorus", bars: 8, repeats: 1 },
+          { id: "cs-12", type: "bridge", name: "Bridge", bars: 8, repeats: 2, notes: "Drums drop out, voices only" },
+          { id: "cs-13", type: "chorus", name: "Chorus", bars: 8, repeats: 1, notes: "Full band enters" },
+          { id: "cs-14", type: "tag", name: "Tag", bars: 4, repeats: 2, notes: "Soft fade" },
+        ],
       },
       {
         id: "ss-3",
@@ -135,7 +154,7 @@ export async function getSetlists(): Promise<FullSetlist[]> {
         drummer:profiles!setlists_drummer_id_fkey(name),
         setlist_songs(
           *,
-          song:songs(title, artist, original_key, bpm)
+          song:songs(title, artist, original_key, bpm, default_structure)
         )
       `)
       .order("service_date", { ascending: false })
@@ -155,6 +174,8 @@ export async function getSetlists(): Promise<FullSetlist[]> {
         artist: ss.song?.artist || "",
         original_key: ss.song?.original_key || ss.assigned_key,
         bpm: ss.song?.bpm,
+        default_structure: ss.song?.default_structure,
+        custom_structure: ss.custom_structure || ss.song?.default_structure,
       })),
     }))
   } catch {
@@ -255,6 +276,7 @@ export async function createSetlist(
       assigned_key: string
       reference_url?: string | null
       category: SongCategory
+      custom_structure?: SongSection[] | null
     }[]
   }
 ): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -285,6 +307,7 @@ export async function createSetlist(
         assigned_key: s.assigned_key,
         reference_url: s.reference_url,
         category: s.category,
+        custom_structure: s.custom_structure || null,
       }))
 
       const { error: songsErr } = await supabase.from("setlist_songs").insert(songsToInsert)
@@ -296,6 +319,31 @@ export async function createSetlist(
     return {
       success: false,
       error: err instanceof Error ? err.message : "Failed to create setlist",
+    }
+  }
+}
+
+export async function updateSetlistSongStructure(
+  setlistSongId: string,
+  customStructure: SongSection[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from("setlist_songs")
+      .update({
+        custom_structure: customStructure,
+      })
+      .eq("id", setlistSongId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Failed to update arrangement structure",
     }
   }
 }
