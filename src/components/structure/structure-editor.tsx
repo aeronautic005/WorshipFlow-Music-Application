@@ -12,7 +12,9 @@ import {
   Music,
   Sliders,
   Check,
+  MessageSquare,
 } from "lucide-react"
+import { SectionNotesModal } from "./section-notes-modal"
 import type { SongSection } from "@/types/database"
 import {
   SECTION_CONFIGS,
@@ -55,6 +57,7 @@ export function StructureEditor({
 
   const [saving, setSaving] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
+  const [activeNoteSectionIndex, setActiveNoteSectionIndex] = useState<number | null>(null)
 
   // Move section up
   const moveUp = (index: number) => {
@@ -286,6 +289,21 @@ export function StructureEditor({
                     ))}
                   </select>
 
+                  {/* Instrument / Arrangement Note Button */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveNoteSectionIndex(idx)}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition ${
+                      section.notes
+                        ? "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-700"
+                        : "bg-background/80 text-muted-foreground hover:text-foreground"
+                    }`}
+                    title={section.notes || "Add instrument notes (drums, keys, vocals)"}
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    <span>{section.notes ? "Note" : "+ Note"}</span>
+                  </button>
+
                   {/* Move Up / Down Buttons */}
                   <div className="flex items-center border rounded-md bg-background/80 overflow-hidden">
                     <button
@@ -348,6 +366,18 @@ export function StructureEditor({
           )}
         </div>
       </div>
+
+      {/* Section Notes Modal */}
+      {activeNoteSectionIndex !== null && sections[activeNoteSectionIndex] && (
+        <SectionNotesModal
+          section={sections[activeNoteSectionIndex]}
+          isOpen={true}
+          onClose={() => setActiveNoteSectionIndex(null)}
+          onSaveNotes={(notes) => {
+            handleUpdate(activeNoteSectionIndex, { notes })
+          }}
+        />
+      )}
     </div>
   )
 }
