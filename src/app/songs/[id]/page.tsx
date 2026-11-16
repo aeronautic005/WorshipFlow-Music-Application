@@ -8,6 +8,7 @@ import { getSongById } from "@/lib/songs"
 import { getChordChart, generateDefaultChordChart } from "@/lib/chords"
 import { transposeChordChart } from "@/lib/transpose"
 import { CapoCalculator } from "@/components/song/capo-calculator"
+import { StructureMap } from "@/components/structure/structure-map"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -278,31 +279,28 @@ export default function SongDetailPage() {
                   <Music2 className="h-4 w-4 text-indigo-400" />
                   <span>Standard Arrangement Blueprint</span>
                 </h2>
-                <span className="text-[10px] uppercase font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded">
-                  Default Flow
-                </span>
+                <Link
+                  href={`/songs/${song.id}/structure`}
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  Edit Blueprint
+                </Link>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-1">
-                {[
-                  "Intro",
-                  "Verse 1",
-                  "Pre-Chorus",
-                  "Chorus",
-                  "Verse 2",
-                  "Chorus",
-                  "Bridge x4",
-                  "Chorus x2",
-                  "Outro",
-                ].map((section, index) => (
-                  <div
-                    key={index}
-                    className="px-3 py-1.5 rounded-lg bg-background border border-border/80 text-xs font-semibold flex items-center gap-1.5"
-                  >
-                    <span className="text-muted-foreground text-[10px] font-mono">{index + 1}</span>
-                    <span>{section}</span>
+              <div className="pt-1">
+                {song.default_structure && song.default_structure.length > 0 ? (
+                  <StructureMap sections={song.default_structure} size="md" />
+                ) : (
+                  <div className="text-xs text-muted-foreground py-2 flex items-center justify-between">
+                    <span>No blueprint set yet for this song.</span>
+                    <Link
+                      href={`/songs/${song.id}/structure`}
+                      className="px-2.5 py-1 rounded-md bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition"
+                    >
+                      Set Up Structure
+                    </Link>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
