@@ -41,7 +41,18 @@ export interface UserProfile {
 export interface SongSection {
   id: string
   name: string // "Intro", "Verse 1", "Chorus", "Bridge", etc.
-  type: "intro" | "verse" | "pre_chorus" | "chorus" | "bridge" | "instrumental" | "outro" | "tag"
+  type:
+    | "intro"
+    | "verse"
+    | "pre_chorus"
+    | "chorus"
+    | "bridge"
+    | "instrumental"
+    | "interlude"
+    | "solo"
+    | "tag"
+    | "outro"
+    | "vamp"
   bars?: number
   repeats?: number
   notes?: string // "drums drop here", "guitar solo 4 bars"
