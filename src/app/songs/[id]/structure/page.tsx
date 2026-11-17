@@ -6,6 +6,7 @@ import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { getSongById, updateSongStructure } from "@/lib/songs"
 import { StructureEditor } from "@/components/structure/structure-editor"
+import { StructureLegend } from "@/components/structure/structure-legend"
 import type { Song, SongSection } from "@/types/database"
 import { ArrowLeft, Loader2, Music2 } from "lucide-react"
 
@@ -100,6 +101,9 @@ export default function SongStructurePage() {
           songTitle={song.title}
           onSave={handleSave}
         />
+
+        {/* Visual Legend & Guide */}
+        <StructureLegend />
       </div>
     </AppShell>
   )

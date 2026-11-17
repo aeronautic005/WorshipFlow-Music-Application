@@ -17,6 +17,8 @@ interface StructureMapProps {
   size?: "sm" | "md" | "lg"
   interactive?: boolean
   showArrows?: boolean
+  bpm?: number | null
+  showTimelineSummary?: boolean
   className?: string
 }
 
@@ -27,8 +29,28 @@ export function StructureMap({
   size = "md",
   interactive = false,
   showArrows = true,
+  bpm,
+  showTimelineSummary = false,
   className = "",
 }: StructureMapProps) {
+  const timelineInfo = useMemo(() => {
+    if (!sections || sections.length === 0) return null
+    const totalBars = sections.reduce(
+      (acc, s) => acc + (s.bars || 8) * (s.repeats && s.repeats > 1 ? s.repeats : 1),
+      0
+    )
+    if (!bpm || bpm <= 0) return { totalBars, durationText: null }
+
+    const beats = totalBars * 4 // Assuming 4/4 standard worship time
+    const seconds = Math.round((beats / bpm) * 60)
+    const mins = Math.floor(seconds / 60)
+    const remSecs = seconds % 60
+    return {
+      totalBars,
+      durationText: `${mins}m ${remSecs < 10 ? "0" : ""}${remSecs}s`,
+    }
+  }, [sections, bpm])
+
   if (!sections || sections.length === 0) {
     return (
       <div className="text-xs text-muted-foreground italic py-2">
@@ -38,7 +60,17 @@ export function StructureMap({
   }
 
   return (
-    <div className={`flex flex-wrap items-center gap-1.5 sm:gap-2 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
+      {showTimelineSummary && timelineInfo && (
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground pb-1">
+          <span>{sections.length} Sections · {timelineInfo.totalBars} Total Bars</span>
+          {timelineInfo.durationText && (
+            <span className="font-mono font-medium">Est. Duration: ~{timelineInfo.durationText}</span>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
       {sections.map((section, idx) => {
         const config = SECTION_CONFIGS[section.type as SectionType] || SECTION_CONFIGS.verse
         const isActive = activeIndex === idx
@@ -121,6 +153,7 @@ export function StructureMap({
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

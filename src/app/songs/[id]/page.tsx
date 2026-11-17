@@ -296,7 +296,12 @@ export default function SongDetailPage() {
 
               <div className="pt-1">
                 {song.default_structure && song.default_structure.length > 0 ? (
-                  <StructureMap sections={song.default_structure} size="md" />
+                  <StructureMap
+                    sections={song.default_structure}
+                    size="md"
+                    bpm={song.bpm}
+                    showTimelineSummary={true}
+                  />
                 ) : (
                   <div className="text-xs text-muted-foreground py-2 flex items-center justify-between">
                     <span>No blueprint set yet for this song.</span>
