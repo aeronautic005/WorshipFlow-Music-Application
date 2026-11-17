@@ -119,7 +119,14 @@ export default function SongDetailPage() {
             <span>Back to Song Library</span>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link
+              href={`/songs/${song.id}/key-history`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/80 text-xs font-medium hover:bg-accent/50 transition-colors shadow-sm"
+            >
+              <Music className="h-3.5 w-3.5 text-primary" />
+              <span>Leader Keys</span>
+            </Link>
             <Link
               href={`/songs/${song.id}/structure`}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors shadow-sm"

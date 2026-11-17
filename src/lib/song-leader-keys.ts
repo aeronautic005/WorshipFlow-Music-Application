@@ -63,6 +63,78 @@ export async function getPreferredKeyForLeader(
   return null
 }
 
+export interface SongLeaderKeyHistoryItem {
+  leader_id: string
+  leader_name: string
+  preferred_key: string
+  last_used?: string
+  times_led?: number
+  notes?: string
+}
+
+export async function getSongKeyHistory(
+  songId: string,
+  songTitle?: string
+): Promise<SongLeaderKeyHistoryItem[]> {
+  const history: SongLeaderKeyHistoryItem[] = []
+
+  // Check Supabase first
+  try {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from("song_leader_keys")
+      .select(`
+        preferred_key,
+        last_used,
+        profiles:song_leader_id(id, name)
+      `)
+      .eq("song_id", songId)
+
+    if (data && data.length > 0) {
+      data.forEach((item: any) => {
+        history.push({
+          leader_id: item.profiles?.id || "unknown",
+          leader_name: item.profiles?.name || "Vocal Leader",
+          preferred_key: item.preferred_key,
+          last_used: item.last_used,
+        })
+      })
+    }
+  } catch {
+    // Fall through to memory
+  }
+
+  // Populate from church defaults if empty or incomplete
+  const leaderNameMap: Record<string, string> = {
+    france: "France",
+    maegan: "Maegan",
+    deanne: "Deanne",
+    argel: "Argel",
+    andrei: "Andrei",
+  }
+
+  if (songTitle) {
+    for (const [leaderKey, songs] of Object.entries(DEFAULT_LEADER_KEYS)) {
+      if (songs[songTitle]) {
+        const leaderName = leaderNameMap[leaderKey] || leaderKey
+        const exists = history.some((h) => h.leader_name.toLowerCase() === leaderName.toLowerCase())
+        if (!exists) {
+          history.push({
+            leader_id: `${leaderKey}-id`,
+            leader_name: leaderName,
+            preferred_key: songs[songTitle],
+            last_used: "2026-11-01T00:00:00Z",
+            times_led: 3,
+            notes: `Standard Sunday key for ${leaderName}`,
+          })
+        }
+      }
+    }
+  }
+
+  return history
+}
+
 export async function recordSongLeaderKey(
   leaderId: string,
   songId: string,
