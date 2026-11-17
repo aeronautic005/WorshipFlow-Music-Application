@@ -13,8 +13,11 @@ import {
   Sliders,
   Check,
   MessageSquare,
+  Lock,
+  Unlock,
 } from "lucide-react"
 import { SectionNotesModal } from "./section-notes-modal"
+import { StructureLockBadge } from "./structure-lock-badge"
 import type { SongSection } from "@/types/database"
 import {
   SECTION_CONFIGS,
@@ -31,6 +34,7 @@ interface StructureEditorProps {
   songTitle?: string
   onSave: (sections: SongSection[]) => Promise<void> | void
   isSetlistOverride?: boolean
+  locked?: boolean
 }
 
 export function StructureEditor({
@@ -38,7 +42,9 @@ export function StructureEditor({
   songTitle,
   onSave,
   isSetlistOverride = false,
+  locked = false,
 }: StructureEditorProps) {
+  const [isLocked, setIsLocked] = useState(locked)
   const [sections, setSections] = useState<StructureSectionItem[]>(() => {
     if (initialSections && initialSections.length > 0) {
       return initialSections.map((s) => ({
@@ -122,14 +128,38 @@ export function StructureEditor({
     }
   }
 
+  const handleToggleLock = () => {
+    if (isLocked) {
+      const ok = window.confirm(
+        "Unlocking will allow changes to the published arrangement. Ensure your musicians (drums, keys, vocals) are aware of any modifications. Proceed?"
+      )
+      if (!ok) return
+      setIsLocked(false)
+    } else {
+      setIsLocked(true)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Structure Lock Alert Banner */}
+      {isSetlistOverride && (
+        <div className="flex items-center justify-between p-3.5 rounded-xl border bg-muted/40">
+          <StructureLockBadge
+            isLocked={isLocked}
+            onToggle={handleToggleLock}
+            showDetails={true}
+          />
+        </div>
+      )}
+
       {/* Action Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border bg-card/60">
         <div>
           <h3 className="font-bold text-base flex items-center gap-2">
             <Music className="w-4 h-4 text-primary" />
             <span>{isSetlistOverride ? "Custom Service Arrangement" : "Default Structure Blueprint"}</span>
+            {isLocked && <Lock className="w-4 h-4 text-amber-500" />}
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             {isSetlistOverride
@@ -140,27 +170,29 @@ export function StructureEditor({
 
         {/* Preset Selector & Save */}
         <div className="flex items-center gap-2 flex-wrap">
-          <select
-            aria-label="Load preset blueprint"
-            className="text-xs px-2.5 py-1.5 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            onChange={(e) => {
-              if (e.target.value) handleLoadPreset(e.target.value)
-            }}
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Load preset blueprint...
-            </option>
-            {STRUCTURE_PRESETS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
+          {!isLocked && (
+            <select
+              aria-label="Load preset blueprint"
+              className="text-xs px-2.5 py-1.5 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              onChange={(e) => {
+                if (e.target.value) handleLoadPreset(e.target.value)
+              }}
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Load preset blueprint...
               </option>
-            ))}
-          </select>
+              {STRUCTURE_PRESETS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || isLocked}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-sm disabled:opacity-50"
           >
             {savedSuccess ? (
@@ -171,7 +203,7 @@ export function StructureEditor({
             ) : (
               <>
                 <Save className="w-3.5 h-3.5" />
-                <span>{saving ? "Saving..." : "Save Structure"}</span>
+                <span>{saving ? "Saving..." : isLocked ? "Locked" : "Save Structure"}</span>
               </>
             )}
           </button>
@@ -304,37 +336,41 @@ export function StructureEditor({
                     <span>{section.notes ? "Note" : "+ Note"}</span>
                   </button>
 
-                  {/* Move Up / Down Buttons */}
-                  <div className="flex items-center border rounded-md bg-background/80 overflow-hidden">
-                    <button
-                      type="button"
-                      disabled={idx === 0}
-                      onClick={() => moveUp(idx)}
-                      className="p-1 hover:bg-muted disabled:opacity-25 transition"
-                      title="Move section earlier"
-                    >
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={idx === sections.length - 1}
-                      onClick={() => moveDown(idx)}
-                      className="p-1 hover:bg-muted disabled:opacity-25 transition border-l"
-                      title="Move section later"
-                    >
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {/* Move Up / Down Buttons (hidden if locked) */}
+                  {!isLocked && (
+                    <div className="flex items-center border rounded-md bg-background/80 overflow-hidden">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => moveUp(idx)}
+                        className="p-1 hover:bg-muted disabled:opacity-25 transition"
+                        title="Move section earlier"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === sections.length - 1}
+                        onClick={() => moveDown(idx)}
+                        className="p-1 hover:bg-muted disabled:opacity-25 transition border-l"
+                        title="Move section later"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
 
-                  {/* Delete button */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(idx)}
-                    className="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 transition"
-                    title="Remove section"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {/* Delete button (hidden if locked) */}
+                  {!isLocked && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemove(idx)}
+                      className="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 transition"
+                      title="Remove section"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             )
@@ -342,30 +378,32 @@ export function StructureEditor({
         )}
       </div>
 
-      {/* Quick Add Bar */}
-      <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Add Section to Blueprint:
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {(["verse", "chorus", "bridge", "intro", "pre_chorus", "tag", "instrumental", "outro"] as SectionType[]).map(
-            (type) => {
-              const conf = SECTION_CONFIGS[type]
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => handleAddSection(type)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-medium transition hover:scale-105 shadow-xs ${conf.color.bg} ${conf.color.border} ${conf.color.text}`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{conf.label}</span>
-                </button>
-              )
-            }
-          )}
+      {/* Quick Add Bar (only shown when not locked) */}
+      {!isLocked && (
+        <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Add Section to Blueprint:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {(["verse", "chorus", "bridge", "intro", "pre_chorus", "tag", "instrumental", "outro"] as SectionType[]).map(
+              (type) => {
+                const conf = SECTION_CONFIGS[type]
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => handleAddSection(type)}
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-medium transition hover:scale-105 shadow-xs ${conf.color.bg} ${conf.color.border} ${conf.color.text}`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{conf.label}</span>
+                  </button>
+                )
+              }
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Section Notes Modal */}
       {activeNoteSectionIndex !== null && sections[activeNoteSectionIndex] && (
