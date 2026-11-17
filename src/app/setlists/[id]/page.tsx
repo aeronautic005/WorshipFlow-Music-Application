@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/app-shell"
 import { getSetlistById, type FullSetlist } from "@/lib/setlists"
 import { SetlistStatusBadge } from "@/components/setlist/setlist-status-badge"
 import { StructureMap } from "@/components/structure/structure-map"
+import { PracticeCheckinBadge } from "@/components/practice/practice-checkin-badge"
 import {
   ArrowLeft,
   Calendar,
@@ -191,7 +192,14 @@ export default function SetlistDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                        <PracticeCheckinBadge
+                          setlistId={setlist.id}
+                          songId={song.song_id}
+                          songTitle={song.title}
+                          size="sm"
+                        />
+
                         <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 font-mono font-bold text-xs border border-orange-500/20">
                           Key: {song.assigned_key}
                         </span>
@@ -277,7 +285,14 @@ export default function SetlistDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+                        <PracticeCheckinBadge
+                          setlistId={setlist.id}
+                          songId={song.song_id}
+                          songTitle={song.title}
+                          size="sm"
+                        />
+
                         <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 font-mono font-bold text-xs border border-blue-500/20">
                           Key: {song.assigned_key}
                         </span>
