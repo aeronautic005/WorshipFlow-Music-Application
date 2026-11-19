@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { CheckCircle2, AlertCircle, Circle, Loader2, Sparkles } from "lucide-react"
+import { CheckCircle2, AlertCircle, Circle, Loader2, NotebookPen } from "lucide-react"
 import type { PracticeStatusType } from "@/types/database"
 import { updatePracticeStatus, type PracticeStatusRecord } from "@/lib/practice"
+import { PrivateNotesModal } from "./private-notes-modal"
 
 interface PracticeCheckinBadgeProps {
   setlistId: string
@@ -28,6 +29,8 @@ export function PracticeCheckinBadge({
 }: PracticeCheckinBadgeProps) {
   const [status, setStatus] = useState<PracticeStatusType>(currentStatus)
   const [loading, setLoading] = useState(false)
+  const [notesModalOpen, setNotesModalOpen] = useState(false)
+  const [savedNotes, setSavedNotes] = useState<string | null>(null)
 
   const handleSelectStatus = async (newStatus: PracticeStatusType) => {
     if (newStatus === status || loading) return
@@ -108,7 +111,36 @@ export function PracticeCheckinBadge({
         <span className="hidden sm:inline">Not Started</span>
       </button>
 
+      {/* Private Notes Trigger */}
+      <button
+        type="button"
+        onClick={() => setNotesModalOpen(true)}
+        className={`p-1 rounded-md transition ${
+          savedNotes
+            ? "text-primary hover:bg-primary/10"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+        }`}
+        title={savedNotes ? `Notes: ${savedNotes}` : "Add private practice notes"}
+      >
+        <NotebookPen className={isSmall ? "w-3 h-3" : "w-3.5 h-3.5"} />
+      </button>
+
       {loading && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground ml-1" />}
+
+      {/* Private Notes Modal */}
+      <PrivateNotesModal
+        isOpen={notesModalOpen}
+        onClose={() => setNotesModalOpen(false)}
+        setlistId={setlistId}
+        songId={songId}
+        songTitle={songTitle}
+        initialNotes={savedNotes}
+        currentStatus={status}
+        onSaved={(record) => {
+          setSavedNotes(record.private_notes || null)
+          if (record.status) setStatus(record.status)
+        }}
+      />
     </div>
   )
 }
