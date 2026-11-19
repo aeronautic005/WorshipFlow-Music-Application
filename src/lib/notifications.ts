@@ -127,3 +127,48 @@ export async function notifySetlistPublished(setlist: {
     tag: `setlist-${setlist.service_date}`,
   })
 }
+
+export async function notifySundayRehearsalReminder(params: {
+  serviceDate: string
+  rehearsalTime?: string
+  serviceTime?: string
+}) {
+  const rehearsal = params.rehearsalTime || "9:00 AM"
+  const service = params.serviceTime || "2:30 PM"
+  const title = `Sunday Rehearsal Reminder: ${rehearsal}`
+  const body = `Church worship rehearsal starts at ${rehearsal} this Sunday morning. Live worship begins at ${service}. Please arrive 15 mins early to tune instruments.`
+
+  saveNotification({
+    title,
+    body,
+    type: "practice_reminder",
+    link: "/practice",
+  })
+
+  await sendNativeNotification(title, {
+    body,
+    tag: `rehearsal-${params.serviceDate}`,
+  })
+}
+
+export async function notifyPracticeReadinessCheckIn(params: {
+  serviceDate: string
+  pendingSongsCount: number
+}) {
+  const title = `Home Practice Check-in Reminder`
+  const body = `You have ${params.pendingSongsCount} song${
+    params.pendingSongsCount > 1 ? "s" : ""
+  } remaining to practice for this Sunday's service. Review the pinned reference tracks and update your readiness!`
+
+  saveNotification({
+    title,
+    body,
+    type: "practice_reminder",
+    link: "/practice",
+  })
+
+  await sendNativeNotification(title, {
+    body,
+    tag: `practice-checkin-${params.serviceDate}`,
+  })
+}

@@ -11,6 +11,7 @@ import {
 } from "@/lib/practice"
 import { StructureMap } from "@/components/structure/structure-map"
 import { PracticeCheckinBadge } from "@/components/practice/practice-checkin-badge"
+import { PracticeReminderCard } from "@/components/practice/practice-reminder-card"
 import {
   CalendarDays,
   Clock,
@@ -136,6 +137,9 @@ export default function IndividualPracticeHubPage() {
             </div>
           </div>
         </div>
+
+        {/* Practice Reminder Settings */}
+        <PracticeReminderCard serviceDate={setlist?.service_date} />
 
         {/* Songs List */}
         {loading ? (
