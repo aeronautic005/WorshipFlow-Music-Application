@@ -16,10 +16,12 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { getSetlists, type FullSetlist } from "@/lib/setlists"
+import { getTeamReadinessForSetlist } from "@/lib/practice"
 import { SetlistStatusBadge } from "./setlist-status-badge"
 
 export function WeekAtAGlanceCard() {
   const [currentSetlist, setCurrentSetlist] = useState<FullSetlist | null>(null)
+  const [readinessPercent, setReadinessPercent] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -34,6 +36,15 @@ export function WeekAtAGlanceCard() {
 
       const fallback = upcoming || list[0] || null
       setCurrentSetlist(fallback)
+
+      if (fallback) {
+        const rd = await getTeamReadinessForSetlist(fallback.id)
+        if (rd.statuses.length > 0) {
+          const ready = rd.statuses.filter((s) => s.status === "ready").length
+          setReadinessPercent(Math.round((ready / rd.statuses.length) * 100))
+        }
+      }
+
       setLoading(false)
     }
     load()
@@ -207,7 +218,11 @@ export function WeekAtAGlanceCard() {
       <div className="flex items-center justify-between pt-2 border-t text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Home practice check-in open</span>
+          <span>
+            {readinessPercent !== null
+              ? `Team Readiness: ${readinessPercent}% Ready`
+              : "Home practice check-in open"}
+          </span>
         </div>
         <Link href="/practice" className="text-primary hover:underline font-medium">
           Check in readiness →

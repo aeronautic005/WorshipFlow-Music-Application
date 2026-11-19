@@ -8,6 +8,7 @@ import { getSetlistById, type FullSetlist } from "@/lib/setlists"
 import { SetlistStatusBadge } from "@/components/setlist/setlist-status-badge"
 import { StructureMap } from "@/components/structure/structure-map"
 import { PracticeCheckinBadge } from "@/components/practice/practice-checkin-badge"
+import { getTeamReadinessForSetlist, type PracticeStatusRecord } from "@/lib/practice"
 import {
   ArrowLeft,
   Calendar,
@@ -32,6 +33,7 @@ export default function SetlistDetailPage() {
 
   const [setlist, setSetlist] = useState<FullSetlist | null>(null)
   const [loading, setLoading] = useState(true)
+  const [teamStatuses, setTeamStatuses] = useState<PracticeStatusRecord[]>([])
 
   useEffect(() => {
     async function load() {
@@ -39,6 +41,8 @@ export default function SetlistDetailPage() {
       try {
         const data = await getSetlistById(setlistId)
         setSetlist(data)
+        const rd = await getTeamReadinessForSetlist(setlistId)
+        setTeamStatuses(rd.statuses)
       } catch (err) {
         console.error("Failed to load setlist:", err)
       } finally {
@@ -154,6 +158,53 @@ export default function SetlistDetailPage() {
               <span>{setlist.notes}</span>
             </div>
           )}
+
+          {/* Team Practice Readiness Strip */}
+          <div className="pt-3 border-t border-border/40 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span className="font-semibold text-foreground">Team Practice Readiness:</span>
+                <span className="font-bold text-primary">
+                  {teamStatuses.length > 0
+                    ? `${Math.round(
+                        (teamStatuses.filter((s) => s.status === "ready").length / teamStatuses.length) *
+                          100
+                      )}% Ready`
+                    : "Check-ins Open"}
+                </span>
+              </div>
+              <Link
+                href="/practice/readiness"
+                className="text-xs text-primary hover:underline font-medium"
+              >
+                Readiness Dashboard →
+              </Link>
+            </div>
+
+            {teamStatuses.length > 0 && (
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden flex">
+                <div
+                  style={{
+                    width: `${
+                      (teamStatuses.filter((s) => s.status === "ready").length / teamStatuses.length) * 100
+                    }%`,
+                  }}
+                  className="bg-emerald-500 h-full transition-all"
+                />
+                <div
+                  style={{
+                    width: `${
+                      (teamStatuses.filter((s) => s.status === "needs_work").length /
+                        teamStatuses.length) *
+                      100
+                    }%`,
+                  }}
+                  className="bg-amber-500 h-full transition-all"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Joyful Songs Section */}
