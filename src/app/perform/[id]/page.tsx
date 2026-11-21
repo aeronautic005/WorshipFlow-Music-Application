@@ -10,7 +10,8 @@ import { LiveSongView } from "@/components/perform/live-song-view"
 import { SectionAdvanceControls } from "@/components/perform/section-advance-controls"
 import { SongNavigator } from "@/components/perform/song-navigator"
 import { StageThemeToggle } from "@/components/perform/stage-theme-toggle"
-import { ArrowLeft, Loader2, Radio, Wifi, WifiOff, Crown, Eye } from "lucide-react"
+import { LiveChordModal } from "@/components/perform/live-chord-modal"
+import { ArrowLeft, Loader2, Radio, Wifi, WifiOff, Crown, Eye, FileCode } from "lucide-react"
 
 export default function LivePerformancePage() {
   const params = useParams()
@@ -24,6 +25,7 @@ export default function LivePerformancePage() {
   const [lastSyncFrom, setLastSyncFrom] = useState<string | null>(null)
   const [isStageDark, setIsStageDark] = useState(true) // Defaults to pure dark for live stage
   const [isLargeFont, setIsLargeFont] = useState(false)
+  const [showChordsModal, setShowChordsModal] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -95,6 +97,15 @@ export default function LivePerformancePage() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === "c" || e.key === "C") {
+        e.preventDefault()
+        setShowChordsModal((prev) => !prev)
+        return
+      }
+      if (e.key === "Escape") {
+        setShowChordsModal(false)
+        return
+      }
       if (e.shiftKey && e.key === "ArrowRight") {
         e.preventDefault()
         goToSong(songIndex + 1)
@@ -222,6 +233,17 @@ export default function LivePerformancePage() {
               </>
             )}
           </button>
+
+          {/* Quick Chords Sheet Button */}
+          <button
+            type="button"
+            onClick={() => setShowChordsModal(true)}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-xs"
+            title="Open chord sheet (press 'C')"
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            <span>Chords</span>
+          </button>
         </div>
       </header>
 
@@ -254,6 +276,16 @@ export default function LivePerformancePage() {
           onSelectSong={goToSong}
         />
       </main>
+
+      {/* Live Chord Sheet Quick View Modal */}
+      <LiveChordModal
+        isOpen={showChordsModal}
+        onClose={() => setShowChordsModal(false)}
+        songId={currentSong.song_id}
+        songTitle={currentSong.title}
+        assignedKey={currentSong.assigned_key}
+        originalKey={currentSong.original_key}
+      />
     </div>
   )
 }
