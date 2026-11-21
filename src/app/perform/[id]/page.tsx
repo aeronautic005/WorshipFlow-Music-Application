@@ -8,6 +8,7 @@ import { buildLiveSongs } from "@/lib/perform"
 import { useLiveSync } from "@/hooks/use-live-sync"
 import { LiveSongView } from "@/components/perform/live-song-view"
 import { SectionAdvanceControls } from "@/components/perform/section-advance-controls"
+import { SongNavigator } from "@/components/perform/song-navigator"
 import { ArrowLeft, Loader2, Radio, Wifi, WifiOff, Crown, Eye } from "lucide-react"
 
 export default function LivePerformancePage() {
@@ -75,11 +76,35 @@ export default function LivePerformancePage() {
   const nextSection = useCallback(() => goToSection(sectionIndex + 1), [goToSection, sectionIndex])
   const prevSection = useCallback(() => goToSection(sectionIndex - 1), [goToSection, sectionIndex])
 
+  const goToSong = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= songs.length) return
+      setSongIndex(index)
+      setSectionIndex(0)
+      if (isController) {
+        sendPosition(index, 0, setlist?.song_leader_name)
+      }
+    },
+    [songs.length, isController, sendPosition, setlist?.song_leader_name]
+  )
+
   // Keyboard / foot-pedal support (Bluetooth page turners)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      if (e.key === " " || e.key === "ArrowRight" || e.key === "PageDown") {
+      if (e.shiftKey && e.key === "ArrowRight") {
+        e.preventDefault()
+        goToSong(songIndex + 1)
+      } else if (e.shiftKey && e.key === "ArrowLeft") {
+        e.preventDefault()
+        goToSong(songIndex - 1)
+      } else if (e.key === "]" || e.key === "n") {
+        e.preventDefault()
+        goToSong(songIndex + 1)
+      } else if (e.key === "[" || e.key === "p") {
+        e.preventDefault()
+        goToSong(songIndex - 1)
+      } else if (e.key === " " || e.key === "ArrowRight" || e.key === "PageDown") {
         e.preventDefault()
         nextSection()
       } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
@@ -89,7 +114,7 @@ export default function LivePerformancePage() {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [nextSection, prevSection])
+  }, [nextSection, prevSection, goToSong, songIndex])
 
   if (loading) {
     return (
@@ -202,6 +227,12 @@ export default function LivePerformancePage() {
           activeIndex={sectionIndex}
           onPrev={prevSection}
           onNext={nextSection}
+        />
+
+        <SongNavigator
+          songs={songs}
+          currentIndex={songIndex}
+          onSelectSong={goToSong}
         />
       </main>
     </div>
