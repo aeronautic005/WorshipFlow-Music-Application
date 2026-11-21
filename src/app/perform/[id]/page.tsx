@@ -11,6 +11,7 @@ import { SectionAdvanceControls } from "@/components/perform/section-advance-con
 import { SongNavigator } from "@/components/perform/song-navigator"
 import { StageThemeToggle } from "@/components/perform/stage-theme-toggle"
 import { LiveChordModal } from "@/components/perform/live-chord-modal"
+import { ScreenWakeControls } from "@/components/perform/screen-wake-controls"
 import { ArrowLeft, Loader2, Radio, Wifi, WifiOff, Crown, Eye, FileCode } from "lucide-react"
 
 export default function LivePerformancePage() {
@@ -244,6 +245,9 @@ export default function LivePerformancePage() {
             <FileCode className="w-3.5 h-3.5" />
             <span>Chords</span>
           </button>
+
+          {/* Screen Wake Lock & Fullscreen */}
+          <ScreenWakeControls />
         </div>
       </header>
 
