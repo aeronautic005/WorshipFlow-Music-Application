@@ -2,7 +2,7 @@
 
 import type { SongSection } from "@/types/database"
 import { SECTION_CONFIGS, type SectionType } from "@/types/structure"
-import { ChevronLeft, ChevronRight, Repeat } from "lucide-react"
+import { ChevronLeft, ChevronRight, Repeat, Sparkles, Volume2 } from "lucide-react"
 
 interface SectionAdvanceControlsProps {
   sections: SongSection[]
@@ -66,17 +66,38 @@ export function SectionAdvanceControls({
           )}
         </div>
 
-        <div className="mt-4 pt-3 border-t border-foreground/10 flex items-center gap-2 text-sm">
-          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            Next
-          </span>
-          {next ? (
-            <span className={`font-bold ${nextConf?.color.text || ""}`}>
-              {next.name}
-              {next.repeats && next.repeats > 1 ? ` x${next.repeats}` : ""}
+        {/* Current section live performance notes & band cues */}
+        {current?.notes && (
+          <div className="mt-3 p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs sm:text-sm font-semibold flex items-start gap-2 shadow-xs">
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="leading-snug">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400/80 block">
+                Band & Instrument Cue:
+              </span>
+              <span>{current.notes}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 pt-3 border-t border-foreground/10 flex items-center justify-between gap-2 text-sm flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Next
             </span>
-          ) : (
-            <span className="font-semibold text-muted-foreground">End of song</span>
+            {next ? (
+              <span className={`font-bold ${nextConf?.color.text || ""}`}>
+                {next.name}
+                {next.repeats && next.repeats > 1 ? ` x${next.repeats}` : ""}
+              </span>
+            ) : (
+              <span className="font-semibold text-muted-foreground">End of song</span>
+            )}
+          </div>
+
+          {next?.notes && (
+            <span className="text-[11px] text-muted-foreground italic truncate max-w-[220px]">
+              Upcoming: {next.notes}
+            </span>
           )}
         </div>
         <p className="mt-2 text-[10px] text-muted-foreground">
