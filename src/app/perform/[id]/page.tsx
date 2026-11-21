@@ -9,6 +9,7 @@ import { useLiveSync } from "@/hooks/use-live-sync"
 import { LiveSongView } from "@/components/perform/live-song-view"
 import { SectionAdvanceControls } from "@/components/perform/section-advance-controls"
 import { SongNavigator } from "@/components/perform/song-navigator"
+import { StageThemeToggle } from "@/components/perform/stage-theme-toggle"
 import { ArrowLeft, Loader2, Radio, Wifi, WifiOff, Crown, Eye } from "lucide-react"
 
 export default function LivePerformancePage() {
@@ -21,6 +22,8 @@ export default function LivePerformancePage() {
   const [sectionIndex, setSectionIndex] = useState(0)
   const [isController, setIsController] = useState(false)
   const [lastSyncFrom, setLastSyncFrom] = useState<string | null>(null)
+  const [isStageDark, setIsStageDark] = useState(true) // Defaults to pure dark for live stage
+  const [isLargeFont, setIsLargeFont] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -136,9 +139,17 @@ export default function LivePerformancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div
+      className={`min-h-screen flex flex-col transition-colors duration-200 ${
+        isStageDark
+          ? "bg-black text-neutral-100"
+          : "bg-background text-foreground"
+      } ${isLargeFont ? "text-lg" : "text-base"}`}
+    >
       {/* Top bar */}
-      <header className="flex items-center justify-between px-4 py-2.5 border-b gap-2 flex-wrap">
+      <header className={`flex items-center justify-between px-4 py-2.5 border-b gap-2 flex-wrap ${
+        isStageDark ? "border-neutral-800 bg-neutral-950/80" : "border-border bg-background/80"
+      }`}>
         <div className="flex items-center gap-3">
           <Link
             href="/perform"
@@ -154,6 +165,14 @@ export default function LivePerformancePage() {
 
         {/* Sync Status & Role Switcher */}
         <div className="flex items-center gap-2">
+          {/* Stage Theme Toggle */}
+          <StageThemeToggle
+            isStageDark={isStageDark}
+            onToggleDark={() => setIsStageDark(!isStageDark)}
+            isLargeFont={isLargeFont}
+            onToggleLargeFont={() => setIsLargeFont(!isLargeFont)}
+          />
+
           {/* Connection badge */}
           <div
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
