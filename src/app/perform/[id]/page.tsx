@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { getSetlistById, type FullSetlist } from "@/lib/setlists"
 import { buildLiveSongs } from "@/lib/perform"
 import { LiveSongView } from "@/components/perform/live-song-view"
+import { SectionAdvanceControls } from "@/components/perform/section-advance-controls"
 import { ArrowLeft, Loader2, Radio } from "lucide-react"
 
 export default function LivePerformancePage() {
@@ -15,6 +16,7 @@ export default function LivePerformancePage() {
   const [setlist, setSetlist] = useState<FullSetlist | null>(null)
   const [loading, setLoading] = useState(true)
   const [songIndex] = useState(0)
+  const [sectionIndex, setSectionIndex] = useState(0)
 
   useEffect(() => {
     async function load() {
@@ -27,6 +29,34 @@ export default function LivePerformancePage() {
 
   const songs = useMemo(() => (setlist ? buildLiveSongs(setlist) : []), [setlist])
   const currentSong = songs[songIndex]
+  const sectionCount = currentSong?.structure.length || 0
+
+  const goToSection = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= sectionCount) return
+      setSectionIndex(index)
+    },
+    [sectionCount]
+  )
+
+  const nextSection = useCallback(() => goToSection(sectionIndex + 1), [goToSection, sectionIndex])
+  const prevSection = useCallback(() => goToSection(sectionIndex - 1), [goToSection, sectionIndex])
+
+  // Keyboard / foot-pedal support (most Bluetooth page turners send arrow keys)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === " " || e.key === "ArrowRight" || e.key === "PageDown") {
+        e.preventDefault()
+        nextSection()
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault()
+        prevSection()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [nextSection, prevSection])
 
   if (loading) {
     return (
@@ -68,8 +98,21 @@ export default function LivePerformancePage() {
         <span className="text-xs text-muted-foreground">Lead: {setlist.song_leader_name}</span>
       </header>
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-6">
-        <LiveSongView song={currentSong} songIndex={songIndex} totalSongs={songs.length} />
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <LiveSongView
+          song={currentSong}
+          songIndex={songIndex}
+          totalSongs={songs.length}
+          activeSectionIndex={sectionIndex}
+          onSectionClick={goToSection}
+        />
+
+        <SectionAdvanceControls
+          sections={currentSong.structure}
+          activeIndex={sectionIndex}
+          onPrev={prevSection}
+          onNext={nextSection}
+        />
       </main>
     </div>
   )
