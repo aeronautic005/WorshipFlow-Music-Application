@@ -6,6 +6,9 @@ import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { getSongById } from "@/lib/songs"
 import { getChordChart, saveChordChart, generateDefaultChordChart } from "@/lib/chords"
+import { generateAiChordChart, type GeneratedChordChartResult } from "@/lib/ai/chords-generator"
+import { AiGenerateButton } from "@/components/ai/ai-generate-button"
+import { AiResultCard } from "@/components/ai/ai-result-card"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -44,6 +47,8 @@ export default function ChordEditorPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiResult, setAiResult] = useState<GeneratedChordChartResult | null>(null)
 
   useEffect(() => {
     async function init() {
@@ -83,6 +88,36 @@ export default function ChordEditorPage() {
 
   const handleInsertTag = (tag: string) => {
     setChartContent((prev) => (prev ? `${prev}\n\n${tag}\n` : `${tag}\n`))
+  }
+
+  const handleAiGenerate = async () => {
+    if (!song) return
+    setAiGenerating(true)
+    setStatus(null)
+    try {
+      const result = await generateAiChordChart({
+        songTitle: song.title,
+        artist: song.artist || undefined,
+        key: selectedKey,
+        lyrics: chartContent.trim() ? chartContent : undefined,
+      })
+      setAiResult(result)
+    } catch (err) {
+      console.error("AI chord generation error:", err)
+      setStatus({ type: "error", text: "Failed to generate chord chart with AI" })
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  const handleApplyAiChords = () => {
+    if (!aiResult) return
+    setChartContent(aiResult.chartContent)
+    setAiResult(null)
+    setStatus({
+      type: "success",
+      text: `AI-generated chord chart in Key of ${selectedKey} applied to editor. Review and click Save when ready!`,
+    })
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -183,23 +218,55 @@ export default function ChordEditorPage() {
             </div>
           </div>
 
-          {/* Quick Insert Section Tags */}
-          <div className="space-y-1.5">
-            <span className="text-[11px] text-muted-foreground font-medium">Quick Insert Section:</span>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleInsertTag(tag)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/60 hover:bg-muted text-[11px] font-mono border border-border/40 transition-colors"
-                >
-                  <Plus className="h-2.5 w-2.5 text-muted-foreground" />
-                  <span>{tag}</span>
-                </button>
-              ))}
+          {/* Quick Insert & AI Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+            <div className="space-y-1.5 flex-1">
+              <span className="text-[11px] text-muted-foreground font-medium">Quick Insert Section:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_TAGS.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleInsertTag(tag)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-muted/60 hover:bg-muted text-[11px] font-mono border border-border/40 transition-colors"
+                  >
+                    <Plus className="h-2.5 w-2.5 text-muted-foreground" />
+                    <span>{tag}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* AI Generate Button */}
+            <div className="shrink-0 pt-2 sm:pt-0">
+              <AiGenerateButton
+                isLoading={aiGenerating}
+                loadingText="Generating Chords..."
+                onClick={handleAiGenerate}
+              >
+                AI Generate Chords ({selectedKey})
+              </AiGenerateButton>
             </div>
           </div>
+
+          {/* AI Result Card Preview */}
+          {aiResult && (
+            <AiResultCard
+              title={`Gemini Chord Suggestion (Key of ${aiResult.key})`}
+              subtitle={`Arranged for ${song?.title || "Song"}${song?.artist ? ` by ${song.artist}` : ""}`}
+              modelName={aiResult.model}
+              isMock={aiResult.isMock}
+              applyLabel="Apply to Editor"
+              onApply={handleApplyAiChords}
+              onRegenerate={handleAiGenerate}
+              onDismiss={() => setAiResult(null)}
+              isRegenerating={aiGenerating}
+            >
+              <div className="bg-background/80 rounded-xl p-3 border border-border/60 max-h-56 overflow-y-auto font-mono text-xs whitespace-pre leading-relaxed text-foreground/90">
+                {aiResult.chartContent}
+              </div>
+            </AiResultCard>
+          )}
 
           {/* Textarea */}
           <div className="space-y-1.5 pt-1">
