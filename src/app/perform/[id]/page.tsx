@@ -4,7 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { getSetlistById, type FullSetlist } from "@/lib/setlists"
-import { buildLiveSongs } from "@/lib/perform"
+import {
+  buildLiveSongs,
+  startPerformanceSession,
+  endPerformanceSession,
+  type PerformanceSessionLog,
+} from "@/lib/perform"
 import { useLiveSync } from "@/hooks/use-live-sync"
 import { LiveSongView } from "@/components/perform/live-song-view"
 import { SectionAdvanceControls } from "@/components/perform/section-advance-controls"
@@ -12,7 +17,19 @@ import { SongNavigator } from "@/components/perform/song-navigator"
 import { StageThemeToggle } from "@/components/perform/stage-theme-toggle"
 import { LiveChordModal } from "@/components/perform/live-chord-modal"
 import { ScreenWakeControls } from "@/components/perform/screen-wake-controls"
-import { ArrowLeft, Loader2, Radio, Wifi, WifiOff, Crown, Eye, FileCode } from "lucide-react"
+import {
+  ArrowLeft,
+  Loader2,
+  Radio,
+  Wifi,
+  WifiOff,
+  Crown,
+  Eye,
+  FileCode,
+  Timer,
+  CheckCircle2,
+  Sparkles,
+} from "lucide-react"
 
 export default function LivePerformancePage() {
   const params = useParams()
@@ -27,15 +44,47 @@ export default function LivePerformancePage() {
   const [isStageDark, setIsStageDark] = useState(true) // Defaults to pure dark for live stage
   const [isLargeFont, setIsLargeFont] = useState(false)
   const [showChordsModal, setShowChordsModal] = useState(false)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [completedSession, setCompletedSession] = useState<PerformanceSessionLog | null>(null)
 
   useEffect(() => {
     async function load() {
       const data = await getSetlistById(setlistId)
       setSetlist(data)
       setLoading(false)
+
+      if (data) {
+        const sess = startPerformanceSession({
+          setlistId: data.id,
+          serviceDate: data.service_date,
+          songsCount: data.songs?.length || 0,
+          leaderName: data.song_leader_name,
+          drummerName: data.drummer_name,
+        })
+        setSessionId(sess.id)
+      }
     }
     if (setlistId) load()
   }, [setlistId])
+
+  // Session elapsed timer ticker
+  useEffect(() => {
+    if (completedSession) return
+    const interval = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [completedSession])
+
+  const handleEndSession = () => {
+    if (sessionId) {
+      const ended = endPerformanceSession(sessionId)
+      if (ended) {
+        setCompletedSession(ended)
+      }
+    }
+  }
 
   const songs = useMemo(() => (setlist ? buildLiveSongs(setlist) : []), [setlist])
   const currentSong = songs[songIndex]
@@ -246,6 +295,26 @@ export default function LivePerformancePage() {
             <span>Chords</span>
           </button>
 
+          {/* Live Service Duration Timer */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/40 border border-border/40 font-mono text-xs font-bold text-foreground">
+            <Timer className="w-3.5 h-3.5 text-primary" />
+            <span>
+              {Math.floor(elapsedSeconds / 60)}:
+              {elapsedSeconds % 60 < 10 ? "0" : ""}
+              {elapsedSeconds % 60}
+            </span>
+          </div>
+
+          {/* Finish Service Button */}
+          <button
+            type="button"
+            onClick={handleEndSession}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-600/15 border border-red-500/30 text-red-500 hover:bg-red-600/25 transition"
+            title="Log service completion and view recap"
+          >
+            <span>Finish</span>
+          </button>
+
           {/* Screen Wake Lock & Fullscreen */}
           <ScreenWakeControls />
         </div>
@@ -290,6 +359,61 @@ export default function LivePerformancePage() {
         assignedKey={currentSong.assigned_key}
         originalKey={currentSong.original_key}
       />
+
+      {/* Performance Session Completion Recap Modal */}
+      {completedSession && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 text-card-foreground shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold tracking-tight">Service Completed!</h2>
+              <p className="text-xs text-muted-foreground">
+                Great worship session. Performance duration and log have been recorded.
+              </p>
+            </div>
+
+            <div className="bg-secondary/40 border border-border/50 rounded-xl p-4 divide-y divide-border/40 text-sm space-y-2.5">
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-xs text-muted-foreground">Setlist / Service Date</span>
+                <span className="font-semibold">{completedSession.service_date}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2.5">
+                <span className="text-xs text-muted-foreground">Song Leader</span>
+                <span className="font-semibold">{completedSession.leader_name || "Unassigned"}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2.5">
+                <span className="text-xs text-muted-foreground">Songs Performed</span>
+                <span className="font-semibold">{completedSession.songs_played_count} songs</span>
+              </div>
+              <div className="flex justify-between items-center pt-2.5">
+                <span className="text-xs text-muted-foreground">Total Duration</span>
+                <span className="font-mono font-bold text-primary">
+                  {Math.floor((completedSession.total_duration_seconds || 0) / 60)}m{" "}
+                  {(completedSession.total_duration_seconds || 0) % 60}s
+                </span>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setCompletedSession(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary transition"
+              >
+                Back to Stage
+              </button>
+              <Link
+                href="/perform"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold text-center hover:opacity-90 transition flex items-center justify-center gap-1.5"
+              >
+                <span>Exit Mode</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

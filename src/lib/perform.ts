@@ -31,3 +31,79 @@ export function buildLiveSongs(setlist: FullSetlist): LiveSong[] {
       }
     })
 }
+
+export interface PerformanceSessionLog {
+  id: string
+  setlist_id: string
+  service_date: string
+  started_at: string
+  ended_at?: string
+  total_duration_seconds?: number
+  songs_played_count: number
+  leader_name?: string
+  drummer_name?: string
+}
+
+const SESSION_STORAGE_KEY = "worshipflow_performance_sessions_v1"
+
+export function getPerformanceSessionLogs(): PerformanceSessionLog[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+export function startPerformanceSession(params: {
+  setlistId: string
+  serviceDate: string
+  songsCount: number
+  leaderName?: string
+  drummerName?: string
+}): PerformanceSessionLog {
+  const all = getPerformanceSessionLogs()
+  const newSession: PerformanceSessionLog = {
+    id: `sess-${Date.now()}`,
+    setlist_id: params.setlistId,
+    service_date: params.serviceDate,
+    started_at: new Date().toISOString(),
+    songs_played_count: params.songsCount,
+    leader_name: params.leaderName,
+    drummer_name: params.drummerName,
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify([newSession, ...all]))
+  }
+
+  return newSession
+}
+
+export function endPerformanceSession(
+  sessionId: string
+): PerformanceSessionLog | null {
+  const all = getPerformanceSessionLogs()
+  const idx = all.findIndex((s) => s.id === sessionId)
+  if (idx < 0) return null
+
+  const session = all[idx]
+  const endedAt = new Date().toISOString()
+  const startMs = new Date(session.started_at).getTime()
+  const endMs = new Date(endedAt).getTime()
+  const totalSeconds = Math.max(0, Math.round((endMs - startMs) / 1000))
+
+  const updated: PerformanceSessionLog = {
+    ...session,
+    ended_at: endedAt,
+    total_duration_seconds: totalSeconds,
+  }
+
+  all[idx] = updated
+  if (typeof window !== "undefined") {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(all))
+  }
+
+  return updated
+}
