@@ -9,6 +9,7 @@ import { getChordChart, generateDefaultChordChart } from "@/lib/chords"
 import { transposeChordChart } from "@/lib/transpose"
 import { CapoCalculator } from "@/components/song/capo-calculator"
 import { StructureMap } from "@/components/structure/structure-map"
+import { AiBadge } from "@/components/ai/ai-badge"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -40,6 +41,7 @@ export default function SongDetailPage() {
   const [selectedKey, setSelectedKey] = useState<string>("G")
   const [baseChart, setBaseChart] = useState<string>("")
   const [chordContent, setChordContent] = useState<string>("")
+  const [isAiChart, setIsAiChart] = useState<boolean>(false)
 
   useEffect(() => {
     async function loadSong() {
@@ -57,6 +59,7 @@ export default function SongDetailPage() {
 
           setBaseChart(content)
           setChordContent(content)
+          setIsAiChart(chart?.is_ai_generated || false)
         }
       } catch (err) {
         console.error("Failed to load song details:", err)
@@ -75,10 +78,12 @@ export default function SongDetailPage() {
     const customChart = await getChordChart(songId, newKey)
     if (customChart) {
       setChordContent(customChart.chart_content)
+      setIsAiChart(customChart.is_ai_generated || false)
     } else {
       // Auto-transpose dynamically in real time
       const transposed = transposeChordChart(baseChart, song.original_key, newKey)
       setChordContent(transposed)
+      setIsAiChart(false)
     }
   }
 
@@ -235,9 +240,12 @@ export default function SongDetailPage() {
         {activeTab === "chords" && (
           <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <FileCode className="h-4 w-4 text-indigo-400" />
                 <h2 className="text-sm font-bold">Chord Progression</h2>
+                {isAiChart && (
+                  <AiBadge label="AI Draft" modelName="gemini-2.5-flash" />
+                )}
               </div>
 
               {/* Key Selector and Edit button */}

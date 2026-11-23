@@ -9,6 +9,7 @@ import { getChordChart, saveChordChart, generateDefaultChordChart } from "@/lib/
 import { generateAiChordChart, type GeneratedChordChartResult } from "@/lib/ai/chords-generator"
 import { AiGenerateButton } from "@/components/ai/ai-generate-button"
 import { AiResultCard } from "@/components/ai/ai-result-card"
+import { AiBadge } from "@/components/ai/ai-badge"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -49,6 +50,8 @@ export default function ChordEditorPage() {
   const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [aiGenerating, setAiGenerating] = useState(false)
   const [aiResult, setAiResult] = useState<GeneratedChordChartResult | null>(null)
+  const [isAiGenerated, setIsAiGenerated] = useState(false)
+  const [isHumanVerified, setIsHumanVerified] = useState(false)
 
   useEffect(() => {
     async function init() {
@@ -62,8 +65,10 @@ export default function ChordEditorPage() {
           const chart = await getChordChart(songId, songData.original_key || "G")
           if (chart) {
             setChartContent(chart.chart_content)
+            setIsAiGenerated(chart.is_ai_generated || false)
           } else {
             setChartContent(generateDefaultChordChart(songData.title, songData.original_key || "G"))
+            setIsAiGenerated(false)
           }
         }
       } catch (err) {
@@ -81,8 +86,10 @@ export default function ChordEditorPage() {
     const chart = await getChordChart(songId, newKey)
     if (chart) {
       setChartContent(chart.chart_content)
+      setIsAiGenerated(chart.is_ai_generated || false)
     } else {
       setChartContent(generateDefaultChordChart(song.title, newKey))
+      setIsAiGenerated(false)
     }
   }
 
@@ -113,10 +120,12 @@ export default function ChordEditorPage() {
   const handleApplyAiChords = () => {
     if (!aiResult) return
     setChartContent(aiResult.chartContent)
+    setIsAiGenerated(true)
+    setIsHumanVerified(false)
     setAiResult(null)
     setStatus({
       type: "success",
-      text: `AI-generated chord chart in Key of ${selectedKey} applied to editor. Review and click Save when ready!`,
+      text: `AI-generated chord chart in Key of ${selectedKey} applied to editor. Review, refine chords, or mark verified before saving!`,
     })
   }
 
@@ -130,9 +139,16 @@ export default function ChordEditorPage() {
     setSaving(true)
     setStatus(null)
 
-    const res = await saveChordChart(songId, selectedKey, chartContent.trim(), false)
+    // If human explicitly verified it, mark is_ai_generated as false; otherwise preserve AI attribution
+    const shouldMarkAi = isAiGenerated && !isHumanVerified
+    const res = await saveChordChart(songId, selectedKey, chartContent.trim(), shouldMarkAi)
     if (res.success) {
-      setStatus({ type: "success", text: `Chord chart for Key of ${selectedKey} saved successfully!` })
+      setStatus({
+        type: "success",
+        text: `Chord chart for Key of ${selectedKey} saved successfully! ${
+          shouldMarkAi ? "(Marked as AI Generated)" : "(Saved as Verified)"
+        }`,
+      })
       setTimeout(() => {
         router.push(`/songs/${songId}`)
         router.refresh()
@@ -266,6 +282,27 @@ export default function ChordEditorPage() {
                 {aiResult.chartContent}
               </div>
             </AiResultCard>
+          )}
+
+          {/* AI Attribution & Human Verification Banner */}
+          {isAiGenerated && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/25 text-xs text-foreground/90">
+              <div className="flex items-center gap-2">
+                <AiBadge label="AI Draft" modelName="gemini-2.5-flash" />
+                <span className="text-muted-foreground text-[11px]">
+                  Generated with AI. You can review and edit any chord before saving.
+                </span>
+              </div>
+              <label className="flex items-center gap-2 text-[11px] font-medium text-foreground cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isHumanVerified}
+                  onChange={(e) => setIsHumanVerified(e.target.checked)}
+                  className="rounded border-purple-500/40 text-purple-600 focus:ring-purple-500 w-3.5 h-3.5"
+                />
+                <span>Mark as Human-Verified</span>
+              </label>
+            </div>
           )}
 
           {/* Textarea */}
