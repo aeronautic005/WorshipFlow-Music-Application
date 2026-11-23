@@ -99,6 +99,9 @@ export default function SongStructurePage() {
         <StructureEditor
           initialSections={song.default_structure}
           songTitle={song.title}
+          artist={song.artist}
+          songCategory={song.category}
+          bpm={song.bpm}
           onSave={handleSave}
         />
 

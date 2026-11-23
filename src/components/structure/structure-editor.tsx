@@ -18,6 +18,10 @@ import {
 } from "lucide-react"
 import { SectionNotesModal } from "./section-notes-modal"
 import { StructureLockBadge } from "./structure-lock-badge"
+import { extractAiSongStructure, type ExtractedStructureResult } from "@/lib/ai/structure-extractor"
+import { AiGenerateButton } from "@/components/ai/ai-generate-button"
+import { AiResultCard } from "@/components/ai/ai-result-card"
+import { AiBadge } from "@/components/ai/ai-badge"
 import type { SongSection } from "@/types/database"
 import {
   SECTION_CONFIGS,
@@ -32,6 +36,9 @@ import {
 interface StructureEditorProps {
   initialSections?: SongSection[] | null
   songTitle?: string
+  artist?: string
+  songCategory?: "joyful" | "worship"
+  bpm?: number | null
   onSave: (sections: SongSection[]) => Promise<void> | void
   isSetlistOverride?: boolean
   locked?: boolean
@@ -40,6 +47,9 @@ interface StructureEditorProps {
 export function StructureEditor({
   initialSections,
   songTitle,
+  artist,
+  songCategory = "worship",
+  bpm,
   onSave,
   isSetlistOverride = false,
   locked = false,
@@ -64,6 +74,37 @@ export function StructureEditor({
   const [saving, setSaving] = useState(false)
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [activeNoteSectionIndex, setActiveNoteSectionIndex] = useState<number | null>(null)
+  const [aiExtracting, setAiExtracting] = useState(false)
+  const [aiResult, setAiResult] = useState<ExtractedStructureResult | null>(null)
+
+  const handleAiExtract = async () => {
+    setAiExtracting(true)
+    try {
+      const result = await extractAiSongStructure({
+        songTitle: songTitle || "Worship Song",
+        artist,
+        category: songCategory,
+        bpm: bpm || undefined,
+      })
+      setAiResult(result)
+    } catch (err) {
+      console.error("AI structure extraction error:", err)
+    } finally {
+      setAiExtracting(false)
+    }
+  }
+
+  const handleAcceptAiStructure = () => {
+    if (!aiResult) return
+    const mapped: StructureSectionItem[] = aiResult.sections.map((s) => ({
+      ...s,
+      bars: s.bars || 8,
+      repeats: s.repeats || 1,
+      dynamics: "full_band",
+    }))
+    setSections(mapped)
+    setAiResult(null)
+  }
 
   // Move section up
   const moveUp = (index: number) => {
@@ -171,23 +212,34 @@ export function StructureEditor({
         {/* Preset Selector & Save */}
         <div className="flex items-center gap-2 flex-wrap">
           {!isLocked && (
-            <select
-              aria-label="Load preset blueprint"
-              className="text-xs px-2.5 py-1.5 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              onChange={(e) => {
-                if (e.target.value) handleLoadPreset(e.target.value)
-              }}
-              defaultValue=""
-            >
-              <option value="" disabled>
-                Load preset blueprint...
-              </option>
-              {STRUCTURE_PRESETS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
+            <>
+              <AiGenerateButton
+                isLoading={aiExtracting}
+                loadingText="Detecting..."
+                onClick={handleAiExtract}
+                className="h-8 py-1 px-3 text-xs"
+              >
+                Auto-Detect Structure
+              </AiGenerateButton>
+
+              <select
+                aria-label="Load preset blueprint"
+                className="text-xs px-2.5 py-1.5 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                onChange={(e) => {
+                  if (e.target.value) handleLoadPreset(e.target.value)
+                }}
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  Load preset blueprint...
                 </option>
-              ))}
-            </select>
+                {STRUCTURE_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </>
           )}
 
           <button
@@ -209,6 +261,43 @@ export function StructureEditor({
           </button>
         </div>
       </div>
+
+      {/* AI Structure Suggestion Preview & Accept Card */}
+      {aiResult && (
+        <AiResultCard
+          title="AI Song Structure Suggestion"
+          subtitle={aiResult.summary || `Extracted ${aiResult.sections.length} sections using Gemini`}
+          modelName={aiResult.model}
+          isMock={aiResult.isMock}
+          applyLabel="Accept & Apply Blueprint"
+          onApply={handleAcceptAiStructure}
+          onRegenerate={handleAiExtract}
+          onDismiss={() => setAiResult(null)}
+          isRegenerating={aiExtracting}
+        >
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-1.5 p-3 rounded-xl bg-background border border-border/80">
+              {aiResult.sections.map((sec, idx) => {
+                const config = SECTION_CONFIGS[sec.type] || SECTION_CONFIGS.verse
+                return (
+                  <span
+                    key={sec.id || idx}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${config.color.bg} ${config.color.text} ${config.color.border}`}
+                  >
+                    <span>{sec.name}</span>
+                    <span className="text-[10px] opacity-75 font-mono">
+                      {sec.bars || 8}b{sec.repeats && sec.repeats > 1 ? ` ×${sec.repeats}` : ""}
+                    </span>
+                  </span>
+                )
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Review the suggested arrangement above. Clicking &quot;Accept & Apply Blueprint&quot; will load these sections into the interactive editor for fine-tuning.
+            </p>
+          </div>
+        </AiResultCard>
+      )}
 
       {/* Sections List */}
       <div className="space-y-2.5">
