@@ -10,6 +10,7 @@ import {
   recordSongLeaderKey,
   type SongLeaderKeyHistoryItem,
 } from "@/lib/song-leader-keys"
+import { SmartKeySuggestion } from "@/components/ai/smart-key-suggestion"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
@@ -259,6 +260,19 @@ export default function SongLeaderKeyHistoryPage() {
                 </select>
               </div>
             </div>
+
+            {/* Smart Key Recommendation Assistant */}
+            {song && (
+              <SmartKeySuggestion
+                songTitle={song.title}
+                originalKey={song.original_key}
+                vocalLeadName={selectedLeader}
+                songCategory={song.category}
+                currentKey={assignedKey}
+                onApplyKey={(key) => setAssignedKey(key)}
+                className="pt-2"
+              />
+            )}
 
             <div className="flex items-center justify-between pt-2">
               <p className="text-xs text-muted-foreground">
