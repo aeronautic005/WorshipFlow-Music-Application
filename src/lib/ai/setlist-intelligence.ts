@@ -237,3 +237,43 @@ export function analyzeSetlistIntelligence(songs: SetlistSongInput[]): SetlistIn
         : "Setlist requires adjustments to meet Sunday worship team guidelines.",
   }
 }
+
+/**
+ * Intelligent setlist sequencing: Places Joyful praise first, followed by Worship,
+ * arranging songs to minimize harmonic transition clashes.
+ */
+export function optimizeSetlistOrder<T extends { category: "joyful" | "worship"; assigned_key: string }>(
+  songs: T[]
+): T[] {
+  if (songs.length <= 1) return [...songs]
+
+  const joyful = songs.filter((s) => s.category === "joyful")
+  const worship = songs.filter((s) => s.category === "worship")
+
+  // Greedy sort to find smooth key transitions within a group
+  function orderBySmoothKeys(list: T[]): T[] {
+    if (list.length <= 2) return list
+    const remaining = [...list]
+    const result: T[] = [remaining.shift()!]
+
+    while (remaining.length > 0) {
+      const lastKey = result[result.length - 1].assigned_key
+      let bestIdx = 0
+      let bestDist = 999
+
+      for (let i = 0; i < remaining.length; i++) {
+        const d = getSemitoneDistance(lastKey, remaining[i].assigned_key)
+        if (d < bestDist) {
+          bestDist = d
+          bestIdx = i
+        }
+      }
+
+      result.push(remaining.splice(bestIdx, 1)[0])
+    }
+
+    return result
+  }
+
+  return [...orderBySmoothKeys(joyful), ...orderBySmoothKeys(worship)]
+}

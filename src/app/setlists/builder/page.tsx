@@ -7,7 +7,10 @@ import { AppShell } from "@/components/layout/app-shell"
 import { SongPickerModal } from "@/components/setlist/song-picker-modal"
 import { createSetlist } from "@/lib/setlists"
 import { getPreferredKeyForLeader } from "@/lib/song-leader-keys"
-import { analyzeSetlistIntelligence } from "@/lib/ai/setlist-intelligence"
+import {
+  analyzeSetlistIntelligence,
+  optimizeSetlistOrder,
+} from "@/lib/ai/setlist-intelligence"
 import { SetlistHealthWidget } from "@/components/setlist/setlist-health-widget"
 import type { Song, SongCategory } from "@/types/database"
 import {
@@ -145,6 +148,10 @@ function BuilderContent() {
     setDraggedIdx(null)
   }
 
+  const handleOptimizeFlow = () => {
+    setSelectedSongs((prev) => optimizeSetlistOrder(prev))
+  }
+
   const handleRemoveSong = (index: number) => {
     setSelectedSongs((prev) => prev.filter((_, idx) => idx !== index))
   }
@@ -230,8 +237,22 @@ function BuilderContent() {
         onActionClick={(action) => {
           if (action === "add_joyful") handleOpenPicker("joyful")
           else if (action === "add_worship") handleOpenPicker("worship")
+          else if (action === "reorder_flow") handleOptimizeFlow()
         }}
       />
+
+      {selectedSongs.length >= 3 && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleOptimizeFlow}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-semibold shadow-xs transition"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span>AI Auto-Sort: Optimal Joyful ➔ Worship Flow</span>
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="flex items-center gap-2 p-3.5 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-xs">
