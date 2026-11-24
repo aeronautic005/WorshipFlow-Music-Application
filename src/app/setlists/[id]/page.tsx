@@ -9,6 +9,7 @@ import { SetlistStatusBadge } from "@/components/setlist/setlist-status-badge"
 import { StructureMap } from "@/components/structure/structure-map"
 import { PracticeCheckinBadge } from "@/components/practice/practice-checkin-badge"
 import { getTeamReadinessForSetlist, type PracticeStatusRecord } from "@/lib/practice"
+import { RehearsalBriefingModal } from "@/components/ai/rehearsal-briefing-modal"
 import {
   ArrowLeft,
   Calendar,
@@ -25,6 +26,7 @@ import {
   Clock,
   Loader2,
   FileText,
+  Sparkles,
 } from "lucide-react"
 
 export default function SetlistDetailPage() {
@@ -34,6 +36,7 @@ export default function SetlistDetailPage() {
   const [setlist, setSetlist] = useState<FullSetlist | null>(null)
   const [loading, setLoading] = useState(true)
   const [teamStatuses, setTeamStatuses] = useState<PracticeStatusRecord[]>([])
+  const [showBriefingModal, setShowBriefingModal] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -92,6 +95,15 @@ export default function SetlistDetailPage() {
           </Link>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowBriefingModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-semibold hover:bg-purple-500/20 transition-colors shadow-xs"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+              <span>9AM Briefing</span>
+            </button>
+
             <Link
               href="/perform"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-colors"
@@ -392,6 +404,23 @@ export default function SetlistDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Sunday 9AM Rehearsal Briefing Modal */}
+        <RehearsalBriefingModal
+          isOpen={showBriefingModal}
+          onClose={() => setShowBriefingModal(false)}
+          serviceDate={setlist.service_date}
+          songLeaderName={setlist.song_leader_name || "Leader"}
+          drummerName={setlist.drummer_name || undefined}
+          backupSingerName={setlist.backup_singer_name || undefined}
+          songs={(setlist.songs || []).map((s) => ({
+            title: s.title,
+            key: s.assigned_key,
+            category: s.category,
+            bpm: s.bpm,
+          }))}
+          leaderNotes={setlist.notes || undefined}
+        />
       </div>
     </AppShell>
   )
