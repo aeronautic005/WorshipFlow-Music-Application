@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Music, Radio, User } from "lucide-react"
+import { Music, Radio, User, Sparkles } from "lucide-react"
 import { NotificationBell } from "./notification-bell"
 
 export function Header() {
@@ -23,6 +23,13 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/chat"
+            className="flex items-center gap-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 px-3 py-1 text-xs font-medium text-purple-300 hover:bg-purple-500/20 transition-colors"
+          >
+            <Sparkles className="h-3 w-3 text-purple-400" />
+            <span className="hidden sm:inline">AI Director</span>
+          </Link>
           <Link
             href="/perform"
             className="flex items-center gap-1.5 rounded-full bg-red-500/10 border border-red-500/20 px-3 py-1 text-xs font-medium text-red-400 hover:bg-red-500/20 transition-colors"
