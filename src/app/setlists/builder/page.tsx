@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { SongPickerModal } from "@/components/setlist/song-picker-modal"
 import { createSetlist } from "@/lib/setlists"
 import { getPreferredKeyForLeader } from "@/lib/song-leader-keys"
+import { analyzeSetlistIntelligence } from "@/lib/ai/setlist-intelligence"
+import { SetlistHealthWidget } from "@/components/setlist/setlist-health-widget"
 import type { Song, SongCategory } from "@/types/database"
 import {
   ArrowLeft,
@@ -24,6 +26,7 @@ import {
   GripVertical,
   ChevronUp,
   ChevronDown,
+  Sparkles,
 } from "lucide-react"
 
 const MUSICAL_KEYS = [
@@ -60,6 +63,18 @@ function BuilderContent() {
 
   const joyfulSongs = selectedSongs.filter((s) => s.category === "joyful")
   const worshipSongs = selectedSongs.filter((s) => s.category === "worship")
+
+  const intelligenceReport = useMemo(() => {
+    return analyzeSetlistIntelligence(
+      selectedSongs.map((s, idx) => ({
+        id: s.song_id,
+        title: s.title,
+        category: s.category,
+        assigned_key: s.assigned_key,
+        order_position: idx + 1,
+      }))
+    )
+  }, [selectedSongs])
 
   const handleOpenPicker = (cat: SongCategory) => {
     setModalCategory(cat)
@@ -209,6 +224,15 @@ function BuilderContent() {
         </p>
       </div>
 
+      {/* Setlist Intelligence Health Widget */}
+      <SetlistHealthWidget
+        report={intelligenceReport}
+        onActionClick={(action) => {
+          if (action === "add_joyful") handleOpenPicker("joyful")
+          else if (action === "add_worship") handleOpenPicker("worship")
+        }}
+      />
+
       {error && (
         <div className="flex items-center gap-2 p-3.5 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive text-xs">
           <AlertCircle className="h-4 w-4 shrink-0" />
@@ -234,6 +258,13 @@ function BuilderContent() {
             <span>Add Joyful Song</span>
           </button>
         </div>
+
+        {joyfulSongs.length < 2 && (
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/25 text-orange-300 text-xs">
+            <Sparkles className="w-3.5 h-3.5 shrink-0 text-orange-400" />
+            <span>AI Suggestion: Church service arc opens with 2–3 fast Joyful songs (110–135 BPM) to engage congregation praise.</span>
+          </div>
+        )}
 
         {joyfulSongs.length === 0 ? (
           <p className="text-xs text-muted-foreground italic py-3 text-center">
@@ -352,6 +383,13 @@ function BuilderContent() {
             <span>Add Worship Song</span>
           </button>
         </div>
+
+        {worshipSongs.length < 2 && (
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs">
+            <Sparkles className="w-3.5 h-3.5 shrink-0 text-blue-400" />
+            <span>AI Suggestion: Add 2–3 slow Worship songs (65–78 BPM) for reverent prayer and congregation adoration.</span>
+          </div>
+        )}
 
         {worshipSongs.length === 0 ? (
           <p className="text-xs text-muted-foreground italic py-3 text-center">
