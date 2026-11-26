@@ -33,8 +33,8 @@ export function BottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 min-h-[44px] h-full py-1.5 text-[11px] transition-colors gap-1 select-none",
                 isActive
-                  ? "text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground font-medium"
+                  ? "text-primary font-bold"
+                  : "text-muted-foreground hover:text-primary font-medium"
               )}
             >
               <Icon className="h-4 w-4" />

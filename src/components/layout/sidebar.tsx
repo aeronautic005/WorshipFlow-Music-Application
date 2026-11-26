@@ -91,26 +91,26 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-background border-r border-border">
+    <div className="flex flex-col h-full bg-[#0F254A] text-white border-r border-[#1B3A6B]">
       {/* Top Workspace Card */}
-      <div className="p-3 border-b border-border/70 shrink-0 flex items-center justify-between gap-2">
+      <div className="p-3.5 border-b border-white/10 shrink-0 flex items-center justify-between gap-2">
         <Link
           href="/"
           onClick={onCloseMobile}
-          className="flex-1 flex items-center justify-between gap-2.5 p-2 rounded-xl bg-card border border-border hover:bg-muted/40 transition-colors"
+          className="flex-1 flex items-center justify-between gap-2.5 p-2 rounded-xl bg-[#163261] border border-white/10 hover:bg-[#1C3D75] transition-colors"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#0F254A] font-extrabold text-xs">
               WF
             </div>
             <div className="min-w-0">
-              <div className="text-[10px] text-muted-foreground leading-tight">Ministry</div>
-              <div className="text-xs font-semibold text-foreground truncate leading-tight">
-                WorshipFlow Team
+              <div className="text-[10px] text-blue-200/70 leading-tight">Ministry</div>
+              <div className="text-xs font-bold text-white truncate leading-tight">
+                WorshipFlow
               </div>
             </div>
           </div>
-          <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <ChevronsUpDown className="w-3.5 h-3.5 text-blue-200/70 shrink-0" />
         </Link>
 
         {onCloseMobile && (
@@ -118,7 +118,7 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
             type="button"
             onClick={onCloseMobile}
             aria-label="Close navigation menu"
-            className="lg:hidden p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition"
+            className="lg:hidden p-1.5 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 transition"
           >
             <X className="w-4 h-4" />
           </button>
@@ -129,7 +129,7 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
       <nav aria-label="Main Sidebar Navigation" className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         {NAV_GROUPS.map((group) => (
           <div key={group.title} className="space-y-1">
-            <div className="px-2.5 text-[11px] font-medium text-muted-foreground">
+            <div className="px-2.5 text-[10px] font-semibold uppercase tracking-wider text-blue-200/55">
               {group.title}
             </div>
             <div className="space-y-0.5">
@@ -146,14 +146,14 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
                     className={cn(
                       "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-colors",
                       active
-                        ? "bg-card text-foreground font-semibold border border-border shadow-2xs"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60 border border-transparent font-medium"
+                        ? "bg-white text-[#0F254A] font-semibold shadow-sm"
+                        : "text-blue-100/80 hover:text-white hover:bg-white/10 font-medium"
                     )}
                   >
                     <Icon
                       className={cn(
                         "w-4 h-4 shrink-0",
-                        active ? "text-foreground" : "text-muted-foreground"
+                        active ? "text-[#0F254A]" : "text-blue-200/75"
                       )}
                     />
                     <span className="truncate">{item.label}</span>
@@ -166,26 +166,26 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
       </nav>
 
       {/* Bottom Profile Card */}
-      <div className="p-3 border-t border-border/70 shrink-0">
+      <div className="p-3.5 border-t border-white/10 shrink-0">
         <Link
           href="/profile"
           onClick={onCloseMobile}
-          className="flex items-center justify-between gap-2.5 p-2 rounded-xl bg-card border border-border hover:bg-muted/40 transition-colors"
+          className="flex items-center justify-between gap-2.5 p-2 rounded-xl bg-[#163261] border border-white/10 hover:bg-[#1C3D75] transition-colors"
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-semibold text-foreground shrink-0">
+            <div className="w-8 h-8 rounded-full bg-white text-[#0F254A] flex items-center justify-center text-xs font-bold shrink-0">
               WT
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-semibold text-foreground truncate leading-tight">
+              <div className="text-xs font-semibold text-white truncate leading-tight">
                 Worship Team
               </div>
-              <div className="text-[10px] text-muted-foreground truncate leading-tight">
+              <div className="text-[10px] text-blue-200/75 truncate leading-tight">
                 Sun 9:00 AM / 2:30 PM
               </div>
             </div>
           </div>
-          <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <ChevronsUpDown className="w-3.5 h-3.5 text-blue-200/70 shrink-0" />
         </Link>
       </div>
     </div>
@@ -202,11 +202,11 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
       {isOpenMobile && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-[#071327]/60"
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-          <aside className="relative w-64 max-w-[82vw] h-full bg-background shadow-xl z-10">
+          <aside className="relative w-64 max-w-[82vw] h-full shadow-2xl z-10">
             {sidebarContent}
           </aside>
         </div>

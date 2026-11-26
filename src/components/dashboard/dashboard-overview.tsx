@@ -39,8 +39,10 @@ function MiniSparkline({ heights }: { heights: number[] }) {
       {heights.map((h, i) => (
         <div
           key={i}
-          className={`w-1 rounded-full ${
-            i === heights.length - 2 ? "bg-foreground" : "bg-border"
+          className={`w-1.5 rounded-full ${
+            i === heights.length - 2
+              ? "bg-primary"
+              : "bg-primary/20"
           }`}
           style={{ height: `${h}%` }}
         />
@@ -137,20 +139,23 @@ export function DashboardOverview() {
       {/* Top Greeting & Actions Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">
             Welcome back, Worship Team
           </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Weekly setlists, rehearsal readiness, and Sunday live service hub.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs text-muted-foreground font-medium">
-            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs text-primary font-medium">
+            <Calendar className="w-3.5 h-3.5 text-primary" />
             <span>{data.nextSetlist?.service_date || "Sunday Service"}</span>
           </div>
 
           <Link
             href="/perform"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-primary/30 bg-card hover:bg-secondary text-xs font-semibold text-primary transition-colors"
           >
             <Radio className="w-3.5 h-3.5" />
             <span>Live Mode</span>
@@ -166,29 +171,29 @@ export function DashboardOverview() {
         </div>
       </div>
 
-      {/* 4 Minimal Monochrome KPI Cards */}
+      {/* 4 Solid White KPI Cards with Deep Navy Accents */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Next Service */}
         <Link
           href={data.nextSetlist ? `/setlists/${data.nextSetlist.id}` : "/setlists"}
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-colors"
+          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
         >
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Next Service
               </div>
-              <div className="text-lg font-bold font-mono text-foreground truncate">
+              <div className="text-lg font-bold font-mono text-primary truncate">
                 {loading ? "..." : data.nextSetlist?.service_date || "Unscheduled"}
               </div>
             </div>
             <MiniSparkline heights={[35, 60, 45, 85, 50]} />
           </div>
-          <div className="px-4 py-2 bg-muted/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
             <span className="truncate">
-              Lead: {data.nextSetlist?.song_leader_name || "TBD"}
+              Lead: <strong className="text-primary">{data.nextSetlist?.song_leader_name || "TBD"}</strong>
             </span>
-            <span className="shrink-0 font-medium text-foreground">
+            <span className="shrink-0 font-semibold text-primary">
               Drums: {data.nextSetlist?.drummer_name || "TBD"}
             </span>
           </div>
@@ -197,22 +202,22 @@ export function DashboardOverview() {
         {/* KPI 2: Team Readiness */}
         <Link
           href="/practice/readiness"
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-colors"
+          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
         >
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Team Readiness
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
+              <div className="text-xl font-bold font-mono text-primary">
                 {loading ? "..." : `${data.readinessPct}%`}
               </div>
             </div>
             <MiniSparkline heights={[40, 55, 70, 95, 65]} />
           </div>
-          <div className="px-4 py-2 bg-muted/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
             <span>Practice check-ins</span>
-            <span className="font-medium text-foreground">
+            <span className="font-semibold text-primary">
               {data.checkedInCount}/{data.totalChecksCount} ready
             </span>
           </div>
@@ -221,45 +226,45 @@ export function DashboardOverview() {
         {/* KPI 3: Song Library */}
         <Link
           href="/songs"
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-colors"
+          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
         >
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Song Library
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
+              <div className="text-xl font-bold font-mono text-primary">
                 {loading ? "..." : data.totalSongs}{" "}
                 <span className="text-xs font-sans font-normal text-muted-foreground">Songs</span>
               </div>
             </div>
             <MiniSparkline heights={[50, 75, 40, 90, 60]} />
           </div>
-          <div className="px-4 py-2 bg-muted/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
             <span>{data.joyfulSongs} Joyful</span>
-            <span className="font-medium text-foreground">{data.worshipSongs} Worship</span>
+            <span className="font-semibold text-primary">{data.worshipSongs} Worship</span>
           </div>
         </Link>
 
         {/* KPI 4: Active Setlists */}
         <Link
           href="/setlists"
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-foreground/30 transition-colors"
+          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
         >
           <div className="p-4 flex items-start justify-between gap-3">
             <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Active Setlists
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
+              <div className="text-xl font-bold font-mono text-primary">
                 {loading ? "..." : data.totalSetlists}
               </div>
             </div>
             <MiniSparkline heights={[30, 50, 80, 95, 45]} />
           </div>
-          <div className="px-4 py-2 bg-muted/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
             <span>Schedule status</span>
-            <span className="font-medium text-foreground">
+            <span className="font-semibold text-primary">
               {data.publishedSetlists} published
             </span>
           </div>
@@ -272,16 +277,16 @@ export function DashboardOverview() {
         <div className="lg:col-span-2 rounded-xl border border-border bg-card flex flex-col">
           <div className="px-5 py-3.5 border-b border-border flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-primary">
                 Upcoming Sunday Lineup
               </h2>
-              <Info className="w-3.5 h-3.5 text-muted-foreground/70" />
+              <Info className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
 
             {data.nextSetlist && (
               <Link
                 href={`/setlists/${data.nextSetlist.id}`}
-                className="inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
               >
                 <span>Open Setlist</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -295,20 +300,26 @@ export function DashboardOverview() {
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div>
                     <div className="text-xs text-muted-foreground">Scheduled Service</div>
-                    <div className="text-lg font-bold text-foreground">
+                    <div className="text-lg font-bold text-primary">
                       {data.nextSetlist.service_date} — {upcomingSongs.length} Songs
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Leader: {data.nextSetlist.song_leader_name || "TBD"}</span>
+                    <span>
+                      Leader: <strong className="text-foreground">{data.nextSetlist.song_leader_name || "TBD"}</strong>
+                    </span>
                     <span>•</span>
-                    <span>Backup: {data.nextSetlist.backup_singer_name || "None"}</span>
+                    <span>
+                      Backup: <strong className="text-foreground">{data.nextSetlist.backup_singer_name || "None"}</strong>
+                    </span>
                     <span>•</span>
-                    <span>Drums: {data.nextSetlist.drummer_name || "TBD"}</span>
+                    <span>
+                      Drums: <strong className="text-foreground">{data.nextSetlist.drummer_name || "TBD"}</strong>
+                    </span>
                   </div>
                 </div>
 
-                {/* Simple Monochrome Song List */}
+                {/* Clean White Song List with Deep Navy Key Badges */}
                 <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
                   {upcomingSongs.length === 0 ? (
                     <div className="p-6 text-center text-xs text-muted-foreground">
@@ -319,10 +330,10 @@ export function DashboardOverview() {
                       <Link
                         key={song.id || idx}
                         href={`/songs/${song.song_id}`}
-                        className="flex items-center justify-between gap-3 px-4 py-3 bg-card hover:bg-muted/40 transition-colors"
+                        className="flex items-center justify-between gap-3 px-4 py-3 bg-card hover:bg-secondary/50 transition-colors"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-5 text-xs font-mono text-muted-foreground">
+                          <span className="w-5 text-xs font-mono font-semibold text-primary/70">
                             {idx + 1}.
                           </span>
                           <div className="min-w-0">
@@ -336,10 +347,10 @@ export function DashboardOverview() {
                         </div>
 
                         <div className="flex items-center gap-2.5 shrink-0">
-                          <span className="px-2 py-0.5 rounded-md border border-border bg-muted/50 text-[11px] font-medium text-muted-foreground capitalize">
+                          <span className="px-2 py-0.5 rounded-md border border-border bg-secondary text-[11px] font-medium text-primary capitalize">
                             {song.category}
                           </span>
-                          <span className="px-2 py-0.5 rounded-md border border-border bg-card text-xs font-mono font-semibold text-foreground min-w-[38px] text-center">
+                          <span className="px-2.5 py-0.5 rounded-md bg-primary text-primary-foreground text-xs font-mono font-bold min-w-[38px] text-center">
                             {song.assigned_key}
                           </span>
                           {song.bpm && (
@@ -354,8 +365,8 @@ export function DashboardOverview() {
                 </div>
 
                 {data.nextSetlist.notes && (
-                  <div className="px-3.5 py-2.5 rounded-lg bg-muted/40 border border-border text-xs text-muted-foreground">
-                    <strong className="text-foreground font-medium">Notes:</strong>{" "}
+                  <div className="px-3.5 py-2.5 rounded-lg bg-secondary/60 border border-border text-xs text-muted-foreground">
+                    <strong className="text-primary font-semibold">Notes:</strong>{" "}
                     {data.nextSetlist.notes}
                   </div>
                 )}
@@ -376,54 +387,68 @@ export function DashboardOverview() {
           </div>
         </div>
 
-        {/* Right (1/3): Breakdown & AI Insight */}
+        {/* Right (1/3): Team & Rehearsal Card */}
         <div className="rounded-xl border border-border bg-card flex flex-col">
           <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-primary">
               Team &amp; Rehearsal
             </h2>
             <Link
               href="/admin/team"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs font-semibold text-primary hover:underline"
             >
               Roster
             </Link>
           </div>
 
           <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
-            {/* Schedule Summary */}
+            {/* Schedule & Readiness Bar */}
             <div className="space-y-3">
               <div>
                 <div className="text-xs text-muted-foreground">Weekly Schedule</div>
-                <div className="text-base font-bold text-foreground mt-0.5">
+                <div className="text-base font-bold text-primary mt-0.5">
                   Sun 9:00 AM &amp; 2:30 PM
                 </div>
               </div>
 
-              {/* Clean Neutral AI Insight Bar (matching reference) */}
+              {/* Readiness Meter */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">Rehearsal Readiness</span>
+                  <span className="font-mono font-bold text-primary">{data.readinessPct}%</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-300"
+                    style={{ width: `${Math.max(8, data.readinessPct)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* AI Insight Bar */}
               <Link
                 href="/chat"
-                className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-border bg-muted/40 hover:bg-muted transition-colors text-xs text-foreground"
+                className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-primary/20 bg-secondary hover:bg-accent transition-colors text-xs text-primary"
               >
-                <span className="flex items-center gap-2 font-medium truncate">
-                  <Sparkles className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="flex items-center gap-2 font-semibold truncate">
+                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
                   <span className="truncate">Get AI insight for Sunday rehearsal</span>
                 </span>
-                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-primary shrink-0" />
               </Link>
             </div>
 
             {/* Clean Roster Breakdown */}
             <div className="space-y-3 pt-1">
               <div className="space-y-1.5">
-                <div className="text-[11px] font-medium text-muted-foreground">
+                <div className="text-[11px] font-semibold text-muted-foreground">
                   Vocal Song Leaders (5)
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {VOCAL_LEADS.map((name) => (
                     <span
                       key={name}
-                      className="px-2.5 py-1 rounded-md border border-border bg-background text-xs font-medium text-foreground"
+                      className="px-2.5 py-1 rounded-md border border-border bg-secondary/60 text-xs font-medium text-primary"
                     >
                       {name}
                     </span>
@@ -432,14 +457,14 @@ export function DashboardOverview() {
               </div>
 
               <div className="space-y-1.5">
-                <div className="text-[11px] font-medium text-muted-foreground">
+                <div className="text-[11px] font-semibold text-muted-foreground">
                   Drummers (Alternating)
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {DRUMMERS.map((name) => (
                     <span
                       key={name}
-                      className="px-2.5 py-1 rounded-md border border-border bg-background text-xs font-medium text-foreground"
+                      className="px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium"
                     >
                       {name}
                     </span>
@@ -452,15 +477,15 @@ export function DashboardOverview() {
             <div className="pt-3 border-t border-border space-y-1.5 text-xs text-muted-foreground">
               <div className="flex justify-between">
                 <span>Mon – Sat</span>
-                <span className="font-medium text-foreground">Home Practice</span>
+                <span className="font-semibold text-primary">Home Practice</span>
               </div>
               <div className="flex justify-between">
                 <span>Sunday 9:00 AM</span>
-                <span className="font-medium text-foreground">Full Rehearsal</span>
+                <span className="font-semibold text-primary">Full Rehearsal</span>
               </div>
               <div className="flex justify-between">
                 <span>Sunday 2:30 PM</span>
-                <span className="font-medium text-foreground">Live Service</span>
+                <span className="font-semibold text-primary">Live Service</span>
               </div>
             </div>
           </div>
@@ -470,11 +495,9 @@ export function DashboardOverview() {
       {/* Bottom Full-Width Table: Repertoire & Rotation */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="px-5 py-3.5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Song Library &amp; Rotation
-            </h2>
-          </div>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-primary">
+            Song Library &amp; Rotation
+          </h2>
 
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -484,13 +507,13 @@ export function DashboardOverview() {
                 value={tableSearch}
                 onChange={(e) => setTableSearch(e.target.value)}
                 placeholder="Search songs..."
-                className="h-8 w-44 sm:w-56 pl-8 pr-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="h-8 w-44 sm:w-56 pl-8 pr-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             <Link
               href="/songs/new"
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground transition-colors shrink-0"
+              className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Song</span>
@@ -501,7 +524,7 @@ export function DashboardOverview() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-border bg-muted/30 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <tr className="border-b border-border bg-secondary/60 text-[11px] font-semibold uppercase tracking-wider text-primary/80">
                 <th className="py-2.5 px-5">Song Title</th>
                 <th className="py-2.5 px-4">Artist</th>
                 <th className="py-2.5 px-4">Category</th>
@@ -522,17 +545,19 @@ export function DashboardOverview() {
                 filteredTableSongs.map((song) => (
                   <tr
                     key={song.songId + song.title}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="hover:bg-secondary/40 transition-colors"
                   >
                     <td className="py-3 px-5 font-semibold text-foreground">{song.title}</td>
                     <td className="py-3 px-4 text-muted-foreground">{song.artist}</td>
                     <td className="py-3 px-4">
-                      <span className="inline-block px-2 py-0.5 rounded-md border border-border bg-muted/50 text-[11px] font-medium text-foreground capitalize">
+                      <span className="inline-block px-2 py-0.5 rounded-md border border-border bg-secondary text-[11px] font-medium text-primary capitalize">
                         {song.category}
                       </span>
                     </td>
-                    <td className="py-3 px-4 font-mono font-semibold text-foreground">
-                      {song.originalKey}
+                    <td className="py-3 px-4">
+                      <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary font-mono font-bold">
+                        {song.originalKey}
+                      </span>
                     </td>
                     <td className="py-3 px-4 font-mono text-muted-foreground">
                       {song.playCount}
@@ -543,7 +568,7 @@ export function DashboardOverview() {
                     <td className="py-3 px-5 text-right">
                       <Link
                         href={`/songs/${song.songId}`}
-                        className="text-xs font-medium text-foreground hover:underline"
+                        className="text-xs font-semibold text-primary hover:underline"
                       >
                         View
                       </Link>
