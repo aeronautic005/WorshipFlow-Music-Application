@@ -16,6 +16,7 @@ import {
   Filter,
   X,
   Loader2,
+  BarChart3,
 } from "lucide-react"
 
 export default function SongsPage() {
@@ -89,13 +90,23 @@ export default function SongsPage() {
             </p>
           </div>
 
-          <Link
-            href="/songs/new"
-            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold tracking-wide transition-colors shadow-sm self-start sm:self-auto"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add New Song</span>
-          </Link>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Link
+              href="/analytics/songs"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-xl border border-border/80 bg-card hover:bg-muted text-xs font-semibold transition-colors shadow-sm"
+            >
+              <BarChart3 className="h-4 w-4 text-primary" />
+              <span>Analytics</span>
+            </Link>
+
+            <Link
+              href="/songs/new"
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold tracking-wide transition-colors shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add New Song</span>
+            </Link>
+          </div>
         </div>
 
         {/* Search & Filter Controls */}
