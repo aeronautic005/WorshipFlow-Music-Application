@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { applyThemePreference } from "@/components/layout/theme-toggle"
+import { TeamFeedbackCard } from "@/components/feedback/team-feedback-card"
 import {
   Settings,
   Sun,
@@ -270,6 +271,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </section>
+
+        {/* Team Requests & Feedback */}
+        <TeamFeedbackCard />
       </div>
     </AppShell>
   )

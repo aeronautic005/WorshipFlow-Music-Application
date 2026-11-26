@@ -10,6 +10,7 @@ import { StructureMap } from "@/components/structure/structure-map"
 import { PracticeCheckinBadge } from "@/components/practice/practice-checkin-badge"
 import { getTeamReadinessForSetlist, type PracticeStatusRecord } from "@/lib/practice"
 import { RehearsalBriefingModal } from "@/components/ai/rehearsal-briefing-modal"
+import { ShareSetlistButton } from "@/components/setlist/share-setlist-button"
 import {
   ArrowLeft,
   Calendar,
@@ -95,6 +96,8 @@ export default function SetlistDetailPage() {
           </Link>
 
           <div className="flex items-center gap-2">
+            <ShareSetlistButton setlist={setlist} />
+
             <button
               type="button"
               onClick={() => setShowBriefingModal(true)}
