@@ -39,7 +39,7 @@ export function AiResultCard({
 }: AiResultCardProps) {
   return (
     <div
-      className={`relative rounded-2xl border border-purple-500/30 bg-gradient-to-b from-purple-950/20 via-card to-card p-5 shadow-xl shadow-purple-950/10 space-y-4 animate-in fade-in duration-200 ${className}`}
+      className={`relative rounded-xl border border-border bg-card p-5 space-y-4 ${className}`}
     >
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
@@ -97,7 +97,7 @@ export function AiResultCard({
           <button
             type="button"
             onClick={onApply}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white shadow-sm transition ml-auto"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-primary hover:opacity-90 text-primary-foreground transition ml-auto cursor-pointer"
           >
             <Check className="w-3.5 h-3.5" />
             <span>{applyLabel}</span>

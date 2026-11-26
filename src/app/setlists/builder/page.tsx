@@ -271,17 +271,17 @@ function BuilderContent() {
 
       {/* Repeat Detector Warning Banner */}
       {repeatWarnings.length > 0 && (
-        <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 p-4 space-y-2 animate-in fade-in duration-150">
-          <div className="flex items-center gap-2 text-amber-300 text-xs font-bold">
-            <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+        <div className="rounded-xl border border-border bg-card p-4 space-y-2">
+          <div className="flex items-center gap-2 text-foreground text-xs font-semibold">
+            <AlertCircle className="w-4 h-4 shrink-0 text-muted-foreground" />
             <span>Recent Repeat Alert ({repeatWarnings.length})</span>
           </div>
-          <ul className="space-y-1 text-xs text-foreground/90">
+          <ul className="space-y-1 text-xs text-muted-foreground">
             {repeatWarnings.map((w) => (
               <li key={w.songTitle}>
-                ⚠️ <strong>&quot;{w.songTitle}&quot;</strong> was played{" "}
-                <strong>{w.daysAgo} days ago</strong> ({w.lastPlayedDate}) by{" "}
-                <strong>{w.lastLeaderName}</strong> in Key of {w.assignedKey}.
+                <strong className="text-foreground">&quot;{w.songTitle}&quot;</strong> was played{" "}
+                <strong className="text-foreground">{w.daysAgo} days ago</strong> ({w.lastPlayedDate}) by{" "}
+                <strong className="text-foreground">{w.lastLeaderName}</strong> in Key of {w.assignedKey}.
               </li>
             ))}
           </ul>

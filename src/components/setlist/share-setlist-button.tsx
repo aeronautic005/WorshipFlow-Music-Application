@@ -17,15 +17,15 @@ export function ShareSetlistButton({ setlist, className = "" }: ShareSetlistButt
     const worship = (setlist.songs || []).filter((s) => s.category === "worship")
 
     const lines: string[] = [
-      `🎵 SUNDAY WORSHIP LINEUP — ${setlist.service_date}`,
-      `🎤 Song Leader: ${setlist.song_leader_name || "TBD"} | 🎶 Backup: ${
+      `SUNDAY WORSHIP LINEUP — ${setlist.service_date}`,
+      `Song Leader: ${setlist.song_leader_name || "TBD"} | Backup: ${
         setlist.backup_singer_name || "None"
-      } | 🥁 Drums: ${setlist.drummer_name || "Rotation"}`,
+      } | Drums: ${setlist.drummer_name || "Rotation"}`,
       "",
     ]
 
     if (joyful.length > 0) {
-      lines.push("🔥 JOYFUL (Fast Praise):")
+      lines.push("JOYFUL (Fast Praise):")
       joyful.forEach((s, idx) => {
         lines.push(`${idx + 1}. ${s.title} (Key: ${s.assigned_key})`)
       })
@@ -33,7 +33,7 @@ export function ShareSetlistButton({ setlist, className = "" }: ShareSetlistButt
     }
 
     if (worship.length > 0) {
-      lines.push("🙏 WORSHIP (Slow):")
+      lines.push("WORSHIP (Slow):")
       worship.forEach((s, idx) => {
         lines.push(`${joyful.length + idx + 1}. ${s.title} (Key: ${s.assigned_key})`)
       })
@@ -41,11 +41,11 @@ export function ShareSetlistButton({ setlist, className = "" }: ShareSetlistButt
     }
 
     if (setlist.notes) {
-      lines.push(`📝 Notes: ${setlist.notes}`)
+      lines.push(`Notes: ${setlist.notes}`)
       lines.push("")
     }
 
-    lines.push("⏰ Sunday 9:00 AM Rehearsal | 2:30 PM Live Service")
+    lines.push("Sunday 9:00 AM Rehearsal | 2:30 PM Live Service")
 
     navigator.clipboard.writeText(lines.join("\n"))
     setCopied(true)

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Sun, Moon } from "lucide-react"
 
-const THEME_STORAGE_KEY = "worshipflow_theme_v1"
+const THEME_STORAGE_KEY = "worshipflow_theme_v2"
 
 export function applyThemePreference(theme: "dark" | "light") {
   if (typeof document === "undefined") return
@@ -16,13 +16,13 @@ export function applyThemePreference(theme: "dark" | "light") {
 }
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const [theme, setTheme] = useState<"dark" | "light">("dark")
+  const [theme, setTheme] = useState<"dark" | "light">("light")
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
     const saved = localStorage.getItem(THEME_STORAGE_KEY) as "dark" | "light" | null
-    const initial = saved || "dark"
+    const initial = saved || "light"
     setTheme(initial)
     applyThemePreference(initial)
   }, [])
@@ -36,7 +36,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <div className={`w-8 h-8 rounded-full border border-border/60 bg-muted/40 ${className}`} />
+      <div className={`w-8 h-8 rounded-lg border border-border bg-card ${className}`} />
     )
   }
 
@@ -46,12 +46,12 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       onClick={toggleTheme}
       aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
       title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      className={`flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer ${className}`}
+      className={`flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer ${className}`}
     >
       {theme === "dark" ? (
-        <Sun className="h-4 w-4 text-amber-400" />
+        <Sun className="h-4 w-4" />
       ) : (
-        <Moon className="h-4 w-4 text-indigo-500" />
+        <Moon className="h-4 w-4" />
       )}
     </button>
   )

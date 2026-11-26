@@ -21,17 +21,13 @@ export function AiGenerateButton({
   ...props
 }: AiGenerateButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold px-3.5 py-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]"
+    "inline-flex items-center justify-center gap-2 rounded-lg text-xs font-semibold px-3.5 py-2 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
 
   const variantStyles = {
-    sparkle:
-      "bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-500 hover:via-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-950/30 border border-purple-400/30",
-    primary:
-      "bg-primary text-primary-foreground hover:bg-primary/90",
-    secondary:
-      "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
-    outline:
-      "border border-purple-500/40 text-purple-400 hover:bg-purple-500/10",
+    sparkle: "bg-primary text-primary-foreground hover:opacity-90",
+    primary: "bg-primary text-primary-foreground hover:opacity-90",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-muted border border-border",
+    outline: "border border-border bg-card text-foreground hover:bg-muted",
   }
 
   return (
