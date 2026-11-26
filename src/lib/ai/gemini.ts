@@ -5,6 +5,8 @@
  * with automatic fallback mock generation when GEMINI_API_KEY is not configured.
  */
 
+import { recordAiUsage } from "@/lib/ai/usage"
+
 export type GeminiModel = "gemini-2.5-flash" | "gemini-2.5-flash-lite" | "gemini-2.5-pro"
 
 export interface GeminiGenerateOptions {
@@ -49,6 +51,11 @@ export async function generateGeminiContent(
 ): Promise<GeminiResponse> {
   const model: GeminiModel = options.model || "gemini-2.5-flash"
   const apiKey = getGeminiApiKey()
+
+  // Track AI usage when invoked on client
+  if (typeof window !== "undefined") {
+    recordAiUsage(model)
+  }
 
   if (!apiKey) {
     // Graceful fallback mock response when API key is not configured
