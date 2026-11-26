@@ -15,6 +15,7 @@ import { buildWorshipTeamContext } from "@/lib/ai/chat-context"
 import { getSongs } from "@/lib/songs"
 import { getSetlists, type FullSetlist } from "@/lib/setlists"
 import { AiBadge } from "@/components/ai/ai-badge"
+import { AiFeedbackButtons } from "@/components/ai/ai-feedback-buttons"
 import type { Song } from "@/types/database"
 import {
   Sparkles,
@@ -177,9 +178,9 @@ export default function WorshipAiChatPage() {
                 >
                   <div className="whitespace-pre-wrap">{msg.content}</div>
 
-                  {/* Message footer & copy button */}
+                  {/* Message footer & feedback / copy controls */}
                   <div
-                    className={`flex items-center justify-between gap-2 mt-2 pt-1 border-t ${
+                    className={`flex items-center justify-between gap-2 mt-2 pt-1.5 border-t ${
                       isUser ? "border-primary-foreground/20 text-primary-foreground/75" : "border-border/40 text-muted-foreground"
                     }`}
                   >
@@ -187,18 +188,28 @@ export default function WorshipAiChatPage() {
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
 
-                    <button
-                      type="button"
-                      onClick={() => handleCopyMessage(msg.id, msg.content)}
-                      className="opacity-70 group-hover:opacity-100 hover:text-foreground transition p-0.5"
-                      title="Copy response"
-                    >
-                      {copiedId === msg.id ? (
-                        <Check className="w-3 h-3 text-emerald-400" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
+                    <div className="flex items-center gap-1.5">
+                      {!isUser && (
+                        <AiFeedbackButtons
+                          targetId={msg.id}
+                          feature="chat"
+                          model={msg.model}
+                        />
                       )}
-                    </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopyMessage(msg.id, msg.content)}
+                        className="opacity-70 group-hover:opacity-100 hover:text-foreground transition p-0.5"
+                        title="Copy response"
+                      >
+                        {copiedId === msg.id ? (
+                          <Check className="w-3 h-3 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
