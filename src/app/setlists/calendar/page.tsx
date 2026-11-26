@@ -16,6 +16,7 @@ import {
   FileEdit,
   ArrowRight,
 } from "lucide-react"
+import { AppShell } from "@/components/layout/app-shell"
 import { getSetlists, type FullSetlist } from "@/lib/setlists"
 import { SetlistStatusBadge } from "@/components/setlist/setlist-status-badge"
 
@@ -61,7 +62,8 @@ export default function SetlistsCalendarPage() {
   }, [setlists, selectedMonth])
 
   return (
-    <div className="container max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <AppShell>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
         <div>
@@ -274,6 +276,7 @@ export default function SetlistsCalendarPage() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </AppShell>
   )
 }
