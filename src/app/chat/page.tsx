@@ -16,6 +16,7 @@ import { getSongs } from "@/lib/songs"
 import { getSetlists, type FullSetlist } from "@/lib/setlists"
 import { AiBadge } from "@/components/ai/ai-badge"
 import { AiFeedbackButtons } from "@/components/ai/ai-feedback-buttons"
+import { AiUsageIndicator } from "@/components/ai/ai-usage-indicator"
 import type { Song } from "@/types/database"
 import {
   Sparkles,
@@ -143,14 +144,18 @@ export default function WorshipAiChatPage() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleClear}
-            className="p-2 rounded-xl border border-border/60 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
-            title="Clear conversation"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <AiUsageIndicator compact />
+
+            <button
+              type="button"
+              onClick={handleClear}
+              className="p-2 rounded-xl border border-border/60 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition"
+              title="Clear conversation"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Message Stream */}
