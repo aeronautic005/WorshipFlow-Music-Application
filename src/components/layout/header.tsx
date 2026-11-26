@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { Music, Radio, User, Sparkles } from "lucide-react"
+import { Music, Radio, User, Sparkles, Settings } from "lucide-react"
 import { NotificationBell } from "./notification-bell"
+import { ThemeToggle } from "./theme-toggle"
 
 export function Header() {
   return (
@@ -38,6 +39,15 @@ export function Header() {
             <span>Live Mode</span>
           </Link>
           <NotificationBell />
+          <ThemeToggle />
+          <Link
+            href="/settings"
+            aria-label="App Settings"
+            title="App Settings"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Settings className="h-4 w-4" />
+          </Link>
           <Link
             href="/profile"
             aria-label="User Profile"
