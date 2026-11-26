@@ -46,50 +46,52 @@ export function Header({ onOpenSidebar }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border bg-card">
-      <div className="flex h-14 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Left: Mobile Menu + Breadcrumb */}
+      <div className="flex h-16 items-center justify-between gap-4 px-5 sm:px-6 lg:px-8">
+        {/* Left: Mobile Menu + Bold Breadcrumb */}
         <div className="flex items-center gap-3 min-w-0">
           {onOpenSidebar && (
             <button
               type="button"
               onClick={onOpenSidebar}
               aria-label="Open navigation menu"
-              className="lg:hidden flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+              className="lg:hidden flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-muted transition cursor-pointer"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             </button>
           )}
 
-          <div className="flex items-center gap-1.5 text-xs truncate">
-            <span className="text-muted-foreground hidden sm:inline">{crumb.parent}</span>
-            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground hidden sm:inline shrink-0" />
-            <span className="font-semibold text-foreground truncate">{crumb.current}</span>
+          <div className="flex items-center gap-2 text-sm truncate">
+            <span className="text-muted-foreground font-medium hidden sm:inline">
+              {crumb.parent}
+            </span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground hidden sm:inline shrink-0" />
+            <span className="font-bold text-primary truncate">{crumb.current}</span>
           </div>
         </div>
 
-        {/* Right: Search + Neutral Utility Icons */}
-        <div className="flex items-center gap-2">
+        {/* Right: Larger Search + Utility Icons */}
+        <div className="flex items-center gap-2.5">
           <form onSubmit={handleSearchSubmit} className="relative hidden md:block">
-            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="h-8 w-52 lg:w-64 pl-8 pr-10 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              placeholder="Search songs..."
+              className="h-10 w-56 lg:w-72 pl-9 pr-10 rounded-lg border border-border bg-background text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground border border-border rounded px-1 py-0.2 bg-card">
+            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold text-muted-foreground border border-border rounded px-1.5 py-0.5 bg-card">
               K
             </span>
           </form>
 
           <NotificationBell />
-          <ThemeToggle />
+          <ThemeToggle className="h-10 w-10" />
 
           <Link
             href="/profile"
             aria-label="User Profile"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-foreground hover:bg-muted transition-colors"
           >
             <User className="h-4 w-4" />
           </Link>

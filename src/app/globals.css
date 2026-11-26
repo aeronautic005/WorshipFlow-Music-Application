@@ -74,6 +74,7 @@
 }
 
 html {
+  font-size: 17px;
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
 }
@@ -81,6 +82,7 @@ html {
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-weight: 500;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
