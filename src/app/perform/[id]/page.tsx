@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { getSetlistById, type FullSetlist } from "@/lib/setlists"
@@ -47,6 +47,7 @@ export default function LivePerformancePage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [completedSession, setCompletedSession] = useState<PerformanceSessionLog | null>(null)
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -93,21 +94,27 @@ export default function LivePerformancePage() {
   // Realtime live sync across band members
   const handleRemoteSync = useCallback(
     (state: { song_index: number; section_index: number; leader_name?: string }) => {
-      // If we are following, automatically jump to the leader's position
+      // If we are following, automatically jump to the leader's position with bounds safety
       if (!isController) {
-        if (state.song_index !== undefined && state.song_index !== songIndex) {
+        if (
+          state.song_index !== undefined &&
+          state.song_index >= 0 &&
+          state.song_index < songs.length &&
+          state.song_index !== songIndex
+        ) {
           setSongIndex(state.song_index)
         }
-        if (state.section_index !== undefined) {
+        if (state.section_index !== undefined && state.section_index >= 0) {
           setSectionIndex(state.section_index)
         }
         if (state.leader_name) {
           setLastSyncFrom(state.leader_name)
-          setTimeout(() => setLastSyncFrom(null), 3000)
+          if (syncTimerRef.current) clearTimeout(syncTimerRef.current)
+          syncTimerRef.current = setTimeout(() => setLastSyncFrom(null), 3000)
         }
       }
     },
-    [isController, songIndex]
+    [isController, songIndex, songs.length]
   )
 
   const { connectionStatus, isConnected, sendPosition } = useLiveSync({
@@ -154,6 +161,7 @@ export default function LivePerformancePage() {
       }
       if (e.key === "Escape") {
         setShowChordsModal(false)
+        setCompletedSession(null)
         return
       }
       if (e.shiftKey && e.key === "ArrowRight") {
