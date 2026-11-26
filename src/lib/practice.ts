@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { PracticeStatusType } from "@/types/database"
 
 export interface PracticeStatusRecord {
@@ -212,25 +212,27 @@ export async function getTeamReadinessForSetlist(
 ): Promise<{ statuses: PracticeStatusRecord[]; summaries: SongReadinessSummary[] }> {
   let allStatuses = getLocalPracticeStatuses().filter((s) => s.setlist_id === setlistId)
 
-  try {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from("practice_status")
-      .select(`
-        *,
-        profiles:user_id(name, instrument)
-      `)
-      .eq("setlist_id", setlistId)
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from("practice_status")
+        .select(`
+          *,
+          profiles:user_id(name, instrument)
+        `)
+        .eq("setlist_id", setlistId)
 
-    if (data && data.length > 0) {
-      allStatuses = data.map((d: any) => ({
-        ...d,
-        user_name: d.profiles?.name || d.user_name || "Musician",
-        instrument: d.profiles?.instrument || d.instrument,
-      }))
+      if (data && data.length > 0) {
+        allStatuses = data.map((d: any) => ({
+          ...d,
+          user_name: d.profiles?.name || d.user_name || "Musician",
+          instrument: d.profiles?.instrument || d.instrument,
+        }))
+      }
+    } catch {
+      // Fallback to local
     }
-  } catch {
-    // Fallback to local
   }
 
   // Group by song_id

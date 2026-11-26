@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { Setlist, SetlistSong, SetlistStatus, SongCategory, SongSection } from "@/types/database"
 import { notifySetlistPublished } from "./notifications"
 
@@ -143,6 +143,9 @@ export const DEFAULT_CHURCH_SETLISTS: FullSetlist[] = [
 ]
 
 export async function getSetlists(): Promise<FullSetlist[]> {
+  if (!isSupabaseConfigured()) {
+    return DEFAULT_CHURCH_SETLISTS
+  }
   try {
     const supabase = createClient()
     const { data, error } = await supabase

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -11,8 +11,14 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // If Supabase credentials are not configured yet, allow graceful browsing
-  if (!supabaseUrl || !supabaseAnonKey) {
+  // If Supabase credentials are not configured (or using local placeholders), allow graceful demo browsing
+  const isPlaceholder =
+    !supabaseUrl ||
+    !supabaseAnonKey ||
+    supabaseUrl.includes("placeholder") ||
+    supabaseUrl.includes("your-project-ref")
+
+  if (isPlaceholder) {
     return response
   }
 
@@ -38,14 +44,6 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-
-  // Public routes that anyone can access
-  const isPublicRoute =
-    pathname === "/login" ||
-    pathname.startsWith("/auth/") ||
-    pathname === "/manifest.json" ||
-    pathname === "/sw.js" ||
-    pathname.startsWith("/icons/")
 
   // If logged in and visiting /login, redirect to home
   if (user && pathname === "/login") {

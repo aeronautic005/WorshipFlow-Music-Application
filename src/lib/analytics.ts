@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import { getSongs } from "@/lib/songs"
 import type { SongCategory } from "@/types/database"
 
@@ -178,6 +178,9 @@ function getMockHistorySeed(): SongHistoryEntry[] {
 }
 
 export async function getSongHistoryEntries(): Promise<SongHistoryEntry[]> {
+  if (!isSupabaseConfigured()) {
+    return getMockHistorySeed()
+  }
   try {
     const supabase = createClient()
     const { data, error } = await supabase

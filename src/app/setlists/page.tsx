@@ -29,8 +29,10 @@ export default function SetlistsPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all")
   const [timeFilter, setTimeFilter] = useState<"all" | "upcoming" | "past">("all")
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const [todayStr, setTodayStr] = useState("")
 
   useEffect(() => {
+    setTodayStr(new Date().toISOString().split("T")[0])
     async function load() {
       setLoading(true)
       const data = await getSetlists()
@@ -39,8 +41,6 @@ export default function SetlistsPage() {
     }
     load()
   }, [])
-
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], [])
 
   const filteredSetlists = useMemo(() => {
     return setlists.filter((item) => {

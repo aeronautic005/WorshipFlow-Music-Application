@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { Song, SongCategory, SongSection } from "@/types/database"
 
 // Pre-seeded songs from the church worship team's active rotation
@@ -130,6 +130,9 @@ export async function getSongs(filter?: {
   search?: string
   key?: string
 }): Promise<Song[]> {
+  if (!isSupabaseConfigured()) {
+    return filterDefaultSongs(filter)
+  }
   try {
     const supabase = createClient()
     let query = supabase.from("songs").select("*").order("title", { ascending: true })
