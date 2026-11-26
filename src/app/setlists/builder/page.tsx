@@ -11,6 +11,7 @@ import {
   analyzeSetlistIntelligence,
   optimizeSetlistOrder,
 } from "@/lib/ai/setlist-intelligence"
+import { detectRecentRepeats, type RepeatWarning } from "@/lib/analytics"
 import { SetlistHealthWidget } from "@/components/setlist/setlist-health-widget"
 import type { Song, SongCategory } from "@/types/database"
 import {
@@ -63,6 +64,20 @@ function BuilderContent() {
   const [modalCategory, setModalCategory] = useState<SongCategory>("joyful")
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [repeatWarnings, setRepeatWarnings] = useState<RepeatWarning[]>([])
+
+  useEffect(() => {
+    let active = true
+    async function checkRepeats() {
+      const titles = selectedSongs.map((s) => s.title)
+      const warnings = await detectRecentRepeats(titles, 21)
+      if (active) setRepeatWarnings(warnings)
+    }
+    checkRepeats()
+    return () => {
+      active = false
+    }
+  }, [selectedSongs])
 
   const joyfulSongs = selectedSongs.filter((s) => s.category === "joyful")
   const worshipSongs = selectedSongs.filter((s) => s.category === "worship")
@@ -251,6 +266,25 @@ function BuilderContent() {
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
             <span>AI Auto-Sort: Optimal Joyful ➔ Worship Flow</span>
           </button>
+        </div>
+      )}
+
+      {/* Repeat Detector Warning Banner */}
+      {repeatWarnings.length > 0 && (
+        <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 p-4 space-y-2 animate-in fade-in duration-150">
+          <div className="flex items-center gap-2 text-amber-300 text-xs font-bold">
+            <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+            <span>Recent Repeat Alert ({repeatWarnings.length})</span>
+          </div>
+          <ul className="space-y-1 text-xs text-foreground/90">
+            {repeatWarnings.map((w) => (
+              <li key={w.songTitle}>
+                ⚠️ <strong>&quot;{w.songTitle}&quot;</strong> was played{" "}
+                <strong>{w.daysAgo} days ago</strong> ({w.lastPlayedDate}) by{" "}
+                <strong>{w.lastLeaderName}</strong> in Key of {w.assignedKey}.
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

@@ -331,3 +331,61 @@ export async function getLeaderHistoryStats(): Promise<LeaderAnalyticsStat[]> {
 
   return result
 }
+
+export interface RepeatWarning {
+  songTitle: string
+  daysAgo: number
+  lastPlayedDate: string
+  lastLeaderName: string
+  assignedKey: string
+}
+
+/**
+ * Checks selected songs against recent Sunday history (default: within last 21 days)
+ * to warn the worship leader before repeating songs too closely.
+ */
+export async function detectRecentRepeats(
+  songTitles: string[],
+  daysThreshold: number = 21
+): Promise<RepeatWarning[]> {
+  if (songTitles.length === 0) return []
+  const history = await getSongHistoryEntries()
+  const warnings: RepeatWarning[] = []
+  const seen = new Set<string>()
+
+  const normalizedTargets = new Set(songTitles.map((t) => t.toLowerCase().trim()))
+
+  for (const entry of history) {
+    const key = entry.song_title.toLowerCase().trim()
+    if (!normalizedTargets.has(key) || seen.has(key)) continue
+
+    const days = daysBetween(entry.played_date)
+    if (days <= daysThreshold) {
+      seen.add(key)
+      warnings.push({
+        songTitle: entry.song_title,
+        daysAgo: days,
+        lastPlayedDate: entry.played_date,
+        lastLeaderName: entry.leader_name,
+        assignedKey: entry.assigned_key,
+      })
+    }
+  }
+
+  return warnings
+}
+
+/**
+ * Returns songs that haven't been sung in at least minDaysAgo days (or never played)
+ * to help leaders keep the Sunday rotation fresh.
+ */
+export async function getFreshSongSuggestions(
+  minDaysAgo: number = 45,
+  limit: number = 5
+): Promise<SongPlayStat[]> {
+  const stats = await getSongPlayStats()
+  return stats
+    .filter((s) => s.daysSincePlayed === null || s.daysSincePlayed >= minDaysAgo)
+    .sort((a, b) => (b.daysSincePlayed ?? 9999) - (a.daysSincePlayed ?? 9999))
+    .slice(0, limit)
+}

@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from "lucide-react"
 import { WeekAtAGlanceCard } from "@/components/setlist/week-at-a-glance"
+import { FreshSongsWidget } from "@/components/analytics/fresh-songs-widget"
 
 export default function Home() {
   return (
@@ -87,6 +88,9 @@ export default function Home() {
 
         {/* Dynamic Week At A Glance Card */}
         <WeekAtAGlanceCard />
+
+        {/* Fresh Songs Due for Rotation */}
+        <FreshSongsWidget />
       </div>
     </AppShell>
   )
