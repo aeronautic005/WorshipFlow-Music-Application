@@ -9,9 +9,8 @@ import {
   Music,
   Plus,
   Search,
-  Flame,
-  Heart,
-  Clock,
+  Sun,
+  Feather,
   ArrowRight,
   Filter,
   X,
@@ -29,59 +28,60 @@ export default function SongsPage() {
   const [selectedKey, setSelectedKey] = useState<string>("all")
 
   useEffect(() => {
-    async function fetchSongs() {
+    async function load() {
       try {
         const data = await getSongs()
         setSongs(data)
       } catch (err) {
-        console.error("Failed to load songs:", err)
+        console.error("Failed to fetch songs:", err)
       } finally {
         setLoading(false)
       }
     }
-    fetchSongs()
+    load()
   }, [])
 
-  // Filtered and sorted songs
   const filteredSongs = useMemo(() => {
     return songs.filter((song) => {
-      // Category filter
       if (selectedCategory !== "all" && song.category !== selectedCategory) {
         return false
       }
-
-      // Key filter
       if (selectedKey !== "all" && song.original_key !== selectedKey) {
         return false
       }
-
-      // Search filter (title or artist)
       if (search.trim()) {
-        const query = search.toLowerCase()
-        const matchesTitle = song.title.toLowerCase().includes(query)
-        const matchesArtist = song.artist.toLowerCase().includes(query)
-        if (!matchesTitle && !matchesArtist) return false
+        const q = search.toLowerCase()
+        const matchTitle = song.title.toLowerCase().includes(q)
+        const matchArtist = song.artist.toLowerCase().includes(q)
+        if (!matchTitle && !matchArtist) return false
       }
-
       return true
     })
   }, [songs, search, selectedCategory, selectedKey])
 
-  // Extract unique keys present in the library
   const availableKeys = useMemo(() => {
     const keys = new Set(songs.map((s) => s.original_key))
     return Array.from(keys).sort()
   }, [songs])
 
+  const joyfulCount = useMemo(
+    () => songs.filter((s) => s.category === "joyful").length,
+    [songs]
+  )
+  const worshipCount = useMemo(
+    () => songs.filter((s) => s.category === "worship").length,
+    [songs]
+  )
+
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Song Library</h1>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 font-semibold border border-indigo-500/20">
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-bold tracking-tight text-primary">Song Library</h1>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-primary font-semibold border border-border">
                 {songs.length} Songs
               </span>
             </div>
@@ -93,24 +93,24 @@ export default function SongsPage() {
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <Link
               href="/analytics/songs"
-              className="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-xl border border-border/80 bg-card hover:bg-muted text-xs font-semibold transition-colors shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full border border-border bg-card hover:bg-secondary text-xs font-semibold text-primary transition-colors"
             >
-              <BarChart3 className="h-4 w-4 text-primary" />
+              <BarChart3 className="h-3.5 w-3.5" />
               <span>Analytics</span>
             </Link>
 
             <Link
               href="/songs/new"
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold tracking-wide transition-colors shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity shadow-xs"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>Add New Song</span>
             </Link>
           </div>
         </div>
 
         {/* Search & Filter Controls */}
-        <div className="space-y-3">
+        <div className="rounded-3xl border border-border/70 bg-card p-4 shadow-[0_2px_12px_rgba(15,37,74,0.04)] space-y-3">
           {/* Search bar */}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -119,54 +119,58 @@ export default function SongsPage() {
               placeholder="Search by song title or artist..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-10 pr-9 rounded-xl border border-border/80 bg-card text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm"
+              className="w-full h-10 pl-10 pr-9 rounded-full border border-border bg-background text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
             {search && (
               <button
+                type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          {/* Filter Pills & Key Dropdown */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
               <button
+                type="button"
                 onClick={() => setSelectedCategory("all")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                   selectedCategory === "all"
-                    ? "bg-foreground text-background font-semibold"
-                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/70 text-muted-foreground hover:text-primary"
                 }`}
               >
                 All Categories ({songs.length})
               </button>
 
               <button
+                type="button"
                 onClick={() => setSelectedCategory("joyful")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                   selectedCategory === "joyful"
-                    ? "bg-orange-500 text-white font-semibold shadow-sm"
-                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/70 text-muted-foreground hover:text-primary"
                 }`}
               >
-                <Flame className="h-3.5 w-3.5" />
-                <span>Joyful ({songs.filter((s) => s.category === "joyful").length})</span>
+                <Sun className="h-3.5 w-3.5" />
+                <span>Joyful ({joyfulCount})</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => setSelectedCategory("worship")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                   selectedCategory === "worship"
-                    ? "bg-blue-600 text-white font-semibold shadow-sm"
-                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/70 text-muted-foreground hover:text-primary"
                 }`}
               >
-                <Heart className="h-3.5 w-3.5" />
-                <span>Worship ({songs.filter((s) => s.category === "worship").length})</span>
+                <Feather className="h-3.5 w-3.5" />
+                <span>Worship ({worshipCount})</span>
               </button>
             </div>
 
@@ -176,7 +180,7 @@ export default function SongsPage() {
               <select
                 value={selectedKey}
                 onChange={(e) => setSelectedKey(e.target.value)}
-                className="h-8 px-2.5 rounded-lg border border-border/80 bg-card text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="h-8 px-3 rounded-full border border-border bg-background text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
               >
                 <option value="all">All Keys</option>
                 {availableKeys.map((k) => (
@@ -192,59 +196,62 @@ export default function SongsPage() {
         {/* Songs List */}
         {loading ? (
           <div className="flex h-48 items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : filteredSongs.length === 0 ? (
-          <div className="text-center py-12 p-6 rounded-2xl border border-dashed border-border/80 bg-card/50 space-y-3">
-            <div className="p-3 rounded-full bg-muted/60 text-muted-foreground w-fit mx-auto">
-              <Music className="h-6 w-6" />
+          <div className="text-center py-12 p-6 rounded-3xl border border-dashed border-border bg-card space-y-3">
+            <div className="p-3 rounded-full bg-secondary text-primary w-fit mx-auto">
+              <Music className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <h3 className="font-semibold text-sm">No songs found</h3>
+              <h3 className="font-bold text-sm text-primary">No songs found</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
                 No songs match your current search or category filter.
               </p>
             </div>
             <button
+              type="button"
               onClick={() => {
                 setSearch("")
                 setSelectedCategory("all")
                 setSelectedKey("all")
               }}
-              className="text-xs text-indigo-400 hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-semibold cursor-pointer"
             >
               Reset all filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-2.5">
+          <div className="space-y-2.5">
             {filteredSongs.map((song) => (
               <Link
                 key={song.id}
                 href={`/songs/${song.id}`}
-                className="group flex items-center justify-between p-4 rounded-xl border border-border/60 bg-card hover:border-indigo-500/40 hover:bg-accent/40 transition-all shadow-sm"
+                className="group flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl border border-border/70 bg-card hover:border-primary/40 shadow-[0_2px_10px_rgba(15,37,74,0.03)] transition-all"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
+                  {/* Clean Category Icon Circle: Sun (Joyful) vs Feather (Worship) */}
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 transition-colors ${
                       song.category === "joyful"
-                        ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                        : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-primary border border-border/80"
                     }`}
+                    title={song.category === "joyful" ? "Joyful (Fast Praise)" : "Worship (Slow)"}
                   >
                     {song.category === "joyful" ? (
-                      <Flame className="h-5 w-5" />
+                      <Sun className="h-4 w-4" />
                     ) : (
-                      <Heart className="h-5 w-5" />
+                      <Feather className="h-4 w-4" />
                     )}
                   </div>
 
                   <div className="min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm truncate group-hover:text-indigo-400 transition-colors">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">
                         {song.title}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-muted/60 text-muted-foreground uppercase font-medium">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground uppercase font-semibold tracking-wide">
                         {song.language}
                       </span>
                     </div>
@@ -252,20 +259,19 @@ export default function SongsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0 ml-3">
-                  <div className="text-right hidden xs:block">
-                    <div className="text-xs font-mono font-bold bg-muted/80 px-2 py-0.5 rounded border border-border/40 inline-block">
-                      Key: {song.original_key}
-                    </div>
-                    {song.bpm && (
-                      <div className="text-[10px] text-muted-foreground flex items-center justify-end gap-1 mt-0.5">
-                        <Clock className="h-2.5 w-2.5" />
-                        <span>{song.bpm} BPM</span>
-                      </div>
-                    )}
-                  </div>
+                {/* Right: BPM, Original Key Pill, and Arrow */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {song.bpm && (
+                    <span className="hidden sm:inline-block text-xs text-muted-foreground font-medium">
+                      {song.bpm} BPM
+                    </span>
+                  )}
 
-                  <div className="p-1 rounded-lg text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
+                  <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold min-w-[42px] text-center">
+                    {song.original_key}
+                  </span>
+
+                  <div className="p-1 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all">
                     <ArrowRight className="h-4 w-4" />
                   </div>
                 </div>
