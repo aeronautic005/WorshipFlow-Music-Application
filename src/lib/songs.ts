@@ -190,6 +190,9 @@ function filterDefaultSongs(filter?: {
 }
 
 export async function getSongById(id: string): Promise<Song | null> {
+  if (!isSupabaseConfigured()) {
+    return DEFAULT_CHURCH_SONGS.find((s) => s.id === id) || null
+  }
   try {
     const supabase = createClient()
     const { data, error } = await supabase.from("songs").select("*").eq("id", id).single()

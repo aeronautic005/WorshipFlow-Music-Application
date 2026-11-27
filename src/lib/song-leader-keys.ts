@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { SongLeaderKey } from "@/types/database"
 
 // Default leader key memory initialized from the church worship team's history
@@ -79,29 +79,31 @@ export async function getSongKeyHistory(
   const history: SongLeaderKeyHistoryItem[] = []
 
   // Check Supabase first
-  try {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from("song_leader_keys")
-      .select(`
-        preferred_key,
-        last_used,
-        profiles:song_leader_id(id, name)
-      `)
-      .eq("song_id", songId)
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from("song_leader_keys")
+        .select(`
+          preferred_key,
+          last_used,
+          profiles:song_leader_id(id, name)
+        `)
+        .eq("song_id", songId)
 
-    if (data && data.length > 0) {
-      data.forEach((item: any) => {
-        history.push({
-          leader_id: item.profiles?.id || "unknown",
-          leader_name: item.profiles?.name || "Vocal Leader",
-          preferred_key: item.preferred_key,
-          last_used: item.last_used,
+      if (data && data.length > 0) {
+        data.forEach((item: any) => {
+          history.push({
+            leader_id: item.profiles?.id || "unknown",
+            leader_name: item.profiles?.name || "Vocal Leader",
+            preferred_key: item.preferred_key,
+            last_used: item.last_used,
+          })
         })
-      })
+      }
+    } catch {
+      // Fall through to memory
     }
-  } catch {
-    // Fall through to memory
   }
 
   // Populate from church defaults if empty or incomplete

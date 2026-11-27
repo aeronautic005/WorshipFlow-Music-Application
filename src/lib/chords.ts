@@ -1,10 +1,13 @@
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { ChordChart } from "@/types/database"
 
 export async function getChordChart(
   songId: string,
   key: string
 ): Promise<ChordChart | null> {
+  if (!isSupabaseConfigured()) {
+    return null
+  }
   try {
     const supabase = createClient()
     const { data, error } = await supabase

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { getSongById } from "@/lib/songs"
@@ -13,8 +13,8 @@ import { AiBadge } from "@/components/ai/ai-badge"
 import type { Song } from "@/types/database"
 import {
   ArrowLeft,
-  Flame,
-  Heart,
+  Sun,
+  Feather,
   Clock,
   ExternalLink,
   Edit3,
@@ -27,12 +27,11 @@ import {
 
 const MUSICAL_KEYS = [
   "C", "C#", "Db", "D", "D#", "Eb", "E",
-  "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"
+  "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B",
 ]
 
 export default function SongDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const songId = params.id as string
 
   const [song, setSong] = useState<Song | null>(null)
@@ -50,12 +49,13 @@ export default function SongDetailPage() {
         const data = await getSongById(songId)
         if (data) {
           setSong(data)
-          setSelectedKey(data.original_key || "G")
+          const origKey = data.original_key || "G"
+          setSelectedKey(origKey)
 
-          const chart = await getChordChart(songId, data.original_key || "G")
+          const chart = await getChordChart(songId, origKey)
           const content = chart
             ? chart.chart_content
-            : generateDefaultChordChart(data.title, data.original_key || "G")
+            : generateDefaultChordChart(data.title, origKey)
 
           setBaseChart(content)
           setChordContent(content)
@@ -74,13 +74,11 @@ export default function SongDetailPage() {
     setSelectedKey(newKey)
     if (!song) return
 
-    // Check if an explicit custom chart exists in DB for this target key
     const customChart = await getChordChart(songId, newKey)
     if (customChart) {
       setChordContent(customChart.chart_content)
       setIsAiChart(customChart.is_ai_generated || false)
     } else {
-      // Auto-transpose dynamically in real time
       const transposed = transposeChordChart(baseChart, song.original_key, newKey)
       setChordContent(transposed)
       setIsAiChart(false)
@@ -91,7 +89,7 @@ export default function SongDetailPage() {
     return (
       <AppShell>
         <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       </AppShell>
     )
@@ -101,9 +99,8 @@ export default function SongDetailPage() {
     return (
       <AppShell>
         <div className="text-center py-16 space-y-3">
-          <h2 className="text-lg font-bold">Song not found</h2>
-          <p className="text-xs text-muted-foreground">The song you requested could not be found.</p>
-          <Link href="/songs" className="inline-block text-xs text-indigo-400 hover:underline">
+          <h2 className="text-lg font-bold text-primary">Song not found</h2>
+          <Link href="/songs" className="text-xs font-semibold text-primary hover:underline">
             Back to Song Library
           </Link>
         </div>
@@ -113,35 +110,35 @@ export default function SongDetailPage() {
 
   return (
     <AppShell>
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Navigation & Actions */}
-        <div className="flex items-center justify-between">
+      <div className="max-w-4xl mx-auto space-y-5">
+        {/* Top Action Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/songs"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back to Song Library</span>
+            <span>Back to Library</span>
           </Link>
 
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/songs/${song.id}/key-history`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/80 text-xs font-medium hover:bg-accent/50 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full border border-border bg-card text-xs font-semibold text-primary hover:bg-secondary transition-colors"
             >
-              <Music className="h-3.5 w-3.5 text-primary" />
+              <Music className="h-3.5 w-3.5" />
               <span>Leader Keys</span>
             </Link>
             <Link
               href={`/songs/${song.id}/structure`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/40 bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full border border-border bg-card text-xs font-semibold text-primary hover:bg-secondary transition-colors"
             >
               <Music2 className="h-3.5 w-3.5" />
               <span>Structure Blueprint</span>
             </Link>
             <Link
               href={`/songs/${song.id}/edit`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/80 text-xs font-medium hover:bg-accent/50 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
             >
               <Edit3 className="h-3.5 w-3.5" />
               <span>Edit Song</span>
@@ -150,37 +147,33 @@ export default function SongDetailPage() {
         </div>
 
         {/* Hero Card */}
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4">
+        <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <span
-                  className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
-                    song.category === "joyful"
-                      ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                      : "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                  }`}
-                >
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-secondary text-primary border border-border">
                   {song.category === "joyful" ? (
-                    <Flame className="h-3 w-3" />
+                    <Sun className="h-3.5 w-3.5" />
                   ) : (
-                    <Heart className="h-3 w-3" />
+                    <Feather className="h-3.5 w-3.5" />
                   )}
                   <span>{song.category === "joyful" ? "Joyful Praise" : "Worship"}</span>
                 </span>
 
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted/80 text-muted-foreground border border-border/40 font-medium">
+                <span className="text-[11px] px-2.5 py-1 rounded-full bg-background text-muted-foreground border border-border font-medium">
                   {song.language}
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{song.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-primary">
+                {song.title}
+              </h1>
               <p className="text-sm text-muted-foreground font-medium">{song.artist}</p>
             </div>
 
             {/* Key & BPM Highlights */}
             <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
-              <div className="px-3.5 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-mono font-bold text-sm">
+              <div className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground font-bold text-sm">
                 Orig. Key: {song.original_key}
               </div>
               {song.bpm && (
@@ -194,67 +187,67 @@ export default function SongDetailPage() {
 
           {/* Reference Audio/Video Link */}
           {song.reference_url && (
-            <div className="pt-2 border-t border-border/40">
+            <div className="pt-3 border-t border-border/70">
               <a
                 href={song.reference_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-xs font-semibold text-foreground border border-border/60 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/70 hover:bg-secondary text-xs font-semibold text-primary border border-border transition-colors"
               >
-                <Music2 className="h-4 w-4 text-red-400" />
+                <Music2 className="h-3.5 w-3.5 text-primary" />
                 <span>Listen to Official Practice Reference</span>
-                <ExternalLink className="h-3 w-3 text-muted-foreground ml-1" />
+                <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </a>
             </div>
           )}
         </div>
 
-        {/* Tab Toggle: Chords vs. Structure & Lyrics */}
-        <div className="flex items-center gap-2 border-b border-border/60 pb-1">
+        {/* Pill Tab Toggle: Chords vs. Structure & Lyrics */}
+        <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border bg-card shadow-2xs">
           <button
+            type="button"
             onClick={() => setActiveTab("chords")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
               activeTab === "chords"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-primary"
             }`}
           >
-            <Music className="h-4 w-4" />
+            <Music className="h-3.5 w-3.5" />
             <span>Chord Chart</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setActiveTab("lyrics")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
               activeTab === "lyrics"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-primary"
             }`}
           >
-            <FileText className="h-4 w-4" />
-            <span>Structure & Lyrics</span>
+            <FileText className="h-3.5 w-3.5" />
+            <span>Structure &amp; Lyrics</span>
           </button>
         </div>
 
         {/* Chords Tab */}
         {activeTab === "chords" && (
-          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-3">
+          <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70 pb-4">
               <div className="flex items-center gap-2 flex-wrap">
-                <FileCode className="h-4 w-4 text-indigo-400" />
-                <h2 className="text-sm font-bold">Chord Progression</h2>
-                {isAiChart && (
-                  <AiBadge label="AI Draft" modelName="gemini-2.5-flash" />
-                )}
+                <FileCode className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-bold text-primary">Chord Progression</h2>
+                {isAiChart && <AiBadge label="AI Draft" modelName="gemini-2.5-flash" />}
               </div>
 
-              {/* Key Selector and Edit button */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground font-medium">Viewing in Key:</span>
+              {/* Key Selector, Edit & Capo */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground font-medium">Key:</span>
                 <select
                   value={selectedKey}
                   onChange={(e) => handleKeyChange(e.target.value)}
-                  className="h-8 px-2.5 rounded-lg border border-border/80 bg-background text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="h-8 px-3 rounded-full border border-border bg-background text-xs font-bold text-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                 >
                   {MUSICAL_KEYS.map((k) => (
                     <option key={k} value={k}>
@@ -265,7 +258,7 @@ export default function SongDetailPage() {
 
                 <Link
                   href={`/songs/${song.id}/chords/edit`}
-                  className="inline-flex items-center gap-1 h-8 px-2.5 rounded-lg border border-border/80 text-xs font-medium hover:bg-muted transition-colors"
+                  className="inline-flex items-center gap-1 h-8 px-3 rounded-full border border-border bg-card text-xs font-semibold text-primary hover:bg-secondary transition-colors"
                 >
                   <Edit3 className="h-3 w-3" />
                   <span>Edit Chords</span>
@@ -276,8 +269,8 @@ export default function SongDetailPage() {
             </div>
 
             {/* Chord Chart Sheet Display */}
-            <div className="p-4 rounded-xl bg-background border border-border/80 overflow-x-auto">
-              <pre className="font-mono text-xs sm:text-sm leading-relaxed text-foreground whitespace-pre">
+            <div className="p-5 rounded-2xl bg-secondary/40 border border-border overflow-x-auto">
+              <pre className="text-xs sm:text-sm leading-relaxed text-foreground whitespace-pre">
                 {chordContent}
               </pre>
             </div>
@@ -286,17 +279,17 @@ export default function SongDetailPage() {
 
         {/* Structure & Lyrics Tab */}
         {activeTab === "lyrics" && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Song Structure Blueprint Preview */}
-            <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-3">
-              <div className="flex items-center justify-between border-b border-border/40 pb-2.5">
-                <h2 className="text-sm font-bold flex items-center gap-2">
-                  <Music2 className="h-4 w-4 text-indigo-400" />
+            <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] space-y-3">
+              <div className="flex items-center justify-between border-b border-border/70 pb-3">
+                <h2 className="text-sm font-bold text-primary flex items-center gap-2">
+                  <Music2 className="h-4 w-4 text-primary" />
                   <span>Standard Arrangement Blueprint</span>
                 </h2>
                 <Link
                   href={`/songs/${song.id}/structure`}
-                  className="text-xs text-primary hover:underline font-medium"
+                  className="text-xs text-primary hover:underline font-semibold"
                 >
                   Edit Blueprint
                 </Link>
@@ -315,32 +308,30 @@ export default function SongDetailPage() {
                     <span>No blueprint set yet for this song.</span>
                     <Link
                       href={`/songs/${song.id}/structure`}
-                      className="px-2.5 py-1 rounded-md bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition"
+                      className="px-3 py-1 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
                     >
-                      Set Up Structure
+                      Create Blueprint
                     </Link>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Lyrics Section */}
-            {song.lyrics ? (
-              <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-3">
-                <div className="flex items-center gap-2 border-b border-border/40 pb-2.5">
-                  <FileText className="h-4 w-4 text-indigo-400" />
-                  <h2 className="text-sm font-bold">Lyrics</h2>
-                </div>
-                <div className="whitespace-pre-line text-sm leading-relaxed text-foreground/90 font-sans font-normal pt-1">
+            {/* Lyrics Card */}
+            <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] space-y-3">
+              <h2 className="text-sm font-bold text-primary border-b border-border/70 pb-3">
+                Lyrics Reference
+              </h2>
+              {song.lyrics ? (
+                <p className="text-sm leading-relaxed whitespace-pre-line text-foreground/90">
                   {song.lyrics}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-border/80 bg-card/40 p-6 text-center space-y-2">
-                <FileText className="h-5 w-5 text-muted-foreground mx-auto" />
-                <p className="text-xs text-muted-foreground">No lyrics have been added yet for this song.</p>
-              </div>
-            )}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground italic py-4">
+                  No lyrics added yet. Click &quot;Edit Song&quot; to add full lyrics.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>

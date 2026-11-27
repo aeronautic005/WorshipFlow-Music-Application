@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { calculateCapoPositions, type CapoOption } from "@/lib/transpose/capo"
-import { Sliders, X, Sparkles } from "lucide-react"
+import { calculateCapoPositions } from "@/lib/transpose/capo"
+import { Sliders, X } from "lucide-react"
 
 interface CapoCalculatorProps {
   currentKey: string
@@ -17,24 +17,26 @@ export function CapoCalculator({ currentKey }: CapoCalculatorProps) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/80 bg-background text-xs font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-semibold transition-colors cursor-pointer ${
+          open
+            ? "bg-primary text-primary-foreground border-primary"
+            : "border-border bg-card text-primary hover:bg-secondary"
+        }`}
       >
-        <Sliders className="h-3.5 w-3.5 text-indigo-400" />
+        <Sliders className="h-3.5 w-3.5" />
         <span>Guitar Capo</span>
       </button>
 
       {open && (
-        <div className="mt-3 p-4 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-3">
+        <div className="mt-3 p-4 rounded-2xl border border-border bg-secondary/40 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-indigo-400" />
-              <h3 className="text-xs font-bold text-foreground">
-                Capo Recommendations for Key of {currentKey}
-              </h3>
-            </div>
+            <h3 className="text-xs font-bold text-primary">
+              Capo Positions for Key of {currentKey}
+            </h3>
             <button
+              type="button"
               onClick={() => setOpen(false)}
-              className="p-1 rounded text-muted-foreground hover:text-foreground"
+              className="p-1 rounded-full text-muted-foreground hover:text-primary cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -44,19 +46,19 @@ export function CapoCalculator({ currentKey }: CapoCalculatorProps) {
             {options.map((opt, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between p-2.5 rounded-lg border border-border/60 bg-card text-xs"
+                className="flex items-center justify-between p-3 rounded-xl border border-border bg-card text-xs"
               >
                 <div>
                   <div className="font-semibold text-foreground">
-                    {opt.capoFret === 0 ? "No Capo" : `Fret ${opt.capoFret}`}
+                    {opt.capoFret === 0 ? "No Capo" : `Capo Fret ${opt.capoFret}`}
                   </div>
                   <div className="text-[11px] text-muted-foreground">
-                    Play in <strong className="text-indigo-400">{opt.openChordShape}</strong> shapes
+                    Play in <strong className="text-primary">{opt.openChordShape}</strong> shapes
                   </div>
                 </div>
 
-                <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-muted font-bold text-muted-foreground">
-                  {opt.openChordShape} Shapes
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">
+                  {opt.openChordShape}
                 </span>
               </div>
             ))}
