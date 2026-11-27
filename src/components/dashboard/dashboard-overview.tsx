@@ -155,9 +155,12 @@ export function DashboardOverview() {
 
           <Link
             href="/perform"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-primary/30 bg-card hover:bg-secondary text-xs font-semibold text-primary transition-colors"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold shadow-xs transition-colors"
           >
-            <Radio className="w-3.5 h-3.5" />
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+            </span>
             <span>Live Mode</span>
           </Link>
 

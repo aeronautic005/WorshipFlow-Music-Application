@@ -193,9 +193,12 @@ export default function SetlistDetailPage() {
 
             <Link
               href={`/perform/${setlist.id}`}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-red-50 border border-red-200 text-red-700 dark:bg-red-950/40 dark:border-red-900 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors"
+              className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold shadow-xs transition-colors"
             >
-              <Radio className="h-3.5 w-3.5" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
               <span>Live Mode</span>
             </Link>
           </div>
