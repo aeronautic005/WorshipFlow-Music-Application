@@ -144,18 +144,22 @@ export function Sidebar({ isOpenMobile = false, onCloseMobile }: SidebarProps) {
                     onClick={onCloseMobile}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-colors",
+                      "flex items-center gap-3 px-2.5 py-1.5 rounded-full text-xs transition-all",
                       active
                         ? "bg-white text-[#0F254A] font-semibold shadow-sm"
                         : "text-blue-100/80 hover:text-white hover:bg-white/10 font-medium"
                     )}
                   >
-                    <Icon
+                    <span
                       className={cn(
-                        "w-4 h-4 shrink-0",
-                        active ? "text-[#0F254A]" : "text-blue-200/75"
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors",
+                        active
+                          ? "bg-[#0F254A] text-white"
+                          : "bg-white/10 text-blue-100"
                       )}
-                    />
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                    </span>
                     <span className="truncate">{item.label}</span>
                   </Link>
                 )

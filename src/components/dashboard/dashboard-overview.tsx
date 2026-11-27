@@ -8,13 +8,17 @@ import { getTeamReadinessForSetlist } from "@/lib/practice"
 import { getSongPlayStats, type SongPlayStat } from "@/lib/analytics"
 import {
   Calendar,
+  CalendarDays,
+  CheckCircle2,
+  Music,
+  Mic2,
   Plus,
-  Radio,
   Search,
   Sparkles,
   ArrowUpRight,
   ChevronRight,
-  Info,
+  User,
+  Users,
 } from "lucide-react"
 
 interface DashboardState {
@@ -31,25 +35,6 @@ interface DashboardState {
 }
 
 const VOCAL_LEADS = ["France", "Maegan", "Deanne", "Argel", "Andrei"]
-const DRUMMERS = ["Kyle", "Aeron"]
-
-function MiniSparkline({ heights }: { heights: number[] }) {
-  return (
-    <div className="flex items-end gap-1 h-9 shrink-0" aria-hidden="true">
-      {heights.map((h, i) => (
-        <div
-          key={i}
-          className={`w-1.5 rounded-full ${
-            i === heights.length - 2
-              ? "bg-primary"
-              : "bg-primary/20"
-          }`}
-          style={{ height: `${h}%` }}
-        />
-      ))}
-    </div>
-  )
-}
 
 export function DashboardOverview() {
   const [data, setData] = useState<DashboardState>({
@@ -121,7 +106,7 @@ export function DashboardOverview() {
   const filteredTableSongs = useMemo(() => {
     const q = tableSearch.trim().toLowerCase()
     const base = data.songStats
-    if (!q) return base.slice(0, 8)
+    if (!q) return base.slice(0, 6)
     return base
       .filter(
         (s) =>
@@ -129,167 +114,158 @@ export function DashboardOverview() {
           s.artist.toLowerCase().includes(q) ||
           s.originalKey.toLowerCase().includes(q)
       )
-      .slice(0, 8)
+      .slice(0, 6)
   }, [data.songStats, tableSearch])
 
   const upcomingSongs = data.nextSetlist?.songs || []
 
+  const shortNextDate = data.nextSetlist
+    ? new Date(data.nextSetlist.service_date + "T00:00:00").toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
+    : "TBD"
+
   return (
-    <div className="space-y-5">
-      {/* Top Greeting & Actions Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">
-            Welcome back, Worship Team
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Weekly setlists, rehearsal readiness, and Sunday live service hub.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-card text-xs text-primary font-medium">
-            <Calendar className="w-3.5 h-3.5 text-primary" />
-            <span>{data.nextSetlist?.service_date || "Sunday Service"}</span>
+    <div className="space-y-6">
+      {/* Top Row: Quick Stats (Jobgio vertical pill card concept) */}
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+        {/* Left Intro + Pill Actions */}
+        <div className="xl:w-64 shrink-0 space-y-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-primary">Quick Stats</h1>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Your worship team overview for the upcoming Sunday service.
+            </p>
           </div>
 
-          <Link
-            href="/perform"
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold shadow-xs transition-colors"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-            </span>
-            <span>Live Mode</span>
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap pt-1">
+            <Link
+              href="/setlists/new"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity shadow-xs"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>New Setlist</span>
+            </Link>
 
-          <Link
-            href="/setlists/new"
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Setlist</span>
-          </Link>
+            <Link
+              href="/perform"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-semibold shadow-xs transition-colors"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+              </span>
+              <span>Live Mode</span>
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {/* 4 Solid White KPI Cards with Deep Navy Accents */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: Next Service */}
-        <Link
-          href={data.nextSetlist ? `/setlists/${data.nextSetlist.id}` : "/setlists"}
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
-        >
-          <div className="p-4 flex items-start justify-between gap-3">
-            <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Next Service
-              </div>
-              <div className="text-lg font-bold font-mono text-primary truncate">
-                {loading ? "..." : data.nextSetlist?.service_date || "Unscheduled"}
-              </div>
+        {/* Right: 5 Tall Rounded Vertical Pill Stat Cards */}
+        <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5">
+          {/* Pill 1: Next Service */}
+          <Link
+            href={data.nextSetlist ? `/setlists/${data.nextSetlist.id}` : "/setlists"}
+            className="rounded-[28px] border border-border/70 bg-card p-5 flex flex-col items-center justify-center text-center gap-2.5 shadow-[0_2px_12px_rgba(15,37,74,0.04)] hover:border-primary/35 transition-all"
+          >
+            <div className="w-11 h-11 rounded-full bg-secondary text-primary flex items-center justify-center">
+              <Calendar className="w-4 h-4" />
             </div>
-            <MiniSparkline heights={[35, 60, 45, 85, 50]} />
-          </div>
-          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-            <span className="truncate">
-              Lead: <strong className="text-primary">{data.nextSetlist?.song_leader_name || "TBD"}</strong>
-            </span>
-            <span className="shrink-0 font-semibold text-primary">
-              Drums: {data.nextSetlist?.drummer_name || "TBD"}
-            </span>
-          </div>
-        </Link>
-
-        {/* KPI 2: Team Readiness */}
-        <Link
-          href="/practice/readiness"
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
-        >
-          <div className="p-4 flex items-start justify-between gap-3">
-            <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Team Readiness
+            <div>
+              <div className="text-lg font-bold text-primary leading-tight">
+                {loading ? "..." : shortNextDate}
               </div>
-              <div className="text-xl font-bold font-mono text-primary">
+              <div className="text-[11px] text-muted-foreground mt-1">Next Service</div>
+            </div>
+          </Link>
+
+          {/* Pill 2 (Featured): Team Readiness — Solid Deep Navy Icon Circle + Bottom Arrow */}
+          <Link
+            href="/practice/readiness"
+            className="relative rounded-[28px] border border-border/70 bg-card p-5 pb-6 flex flex-col items-center justify-center text-center gap-2.5 shadow-[0_4px_16px_rgba(15,37,74,0.07)] hover:border-primary/40 transition-all"
+          >
+            <div className="w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-primary leading-tight">
                 {loading ? "..." : `${data.readinessPct}%`}
               </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Team Readiness</div>
             </div>
-            <MiniSparkline heights={[40, 55, 70, 95, 65]} />
-          </div>
-          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Practice check-ins</span>
-            <span className="font-semibold text-primary">
-              {data.checkedInCount}/{data.totalChecksCount} ready
+            <span className="absolute -bottom-3 w-7 h-7 rounded-full bg-card border border-border shadow-xs flex items-center justify-center text-primary">
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </span>
-          </div>
-        </Link>
+          </Link>
 
-        {/* KPI 3: Song Library */}
-        <Link
-          href="/songs"
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
-        >
-          <div className="p-4 flex items-start justify-between gap-3">
-            <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Song Library
-              </div>
-              <div className="text-xl font-bold font-mono text-primary">
-                {loading ? "..." : data.totalSongs}{" "}
-                <span className="text-xs font-sans font-normal text-muted-foreground">Songs</span>
-              </div>
+          {/* Pill 3: Total Songs */}
+          <Link
+            href="/songs"
+            className="rounded-[28px] border border-border/70 bg-card p-5 flex flex-col items-center justify-center text-center gap-2.5 shadow-[0_2px_12px_rgba(15,37,74,0.04)] hover:border-primary/35 transition-all"
+          >
+            <div className="w-11 h-11 rounded-full bg-secondary text-primary flex items-center justify-center">
+              <Music className="w-4 h-4" />
             </div>
-            <MiniSparkline heights={[50, 75, 40, 90, 60]} />
-          </div>
-          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>{data.joyfulSongs} Joyful</span>
-            <span className="font-semibold text-primary">{data.worshipSongs} Worship</span>
-          </div>
-        </Link>
-
-        {/* KPI 4: Active Setlists */}
-        <Link
-          href="/setlists"
-          className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
-        >
-          <div className="p-4 flex items-start justify-between gap-3">
-            <div className="space-y-1.5 min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Active Setlists
+            <div>
+              <div className="text-lg font-bold text-primary leading-tight">
+                {loading ? "..." : data.totalSongs}
               </div>
-              <div className="text-xl font-bold font-mono text-primary">
+              <div className="text-[11px] text-muted-foreground mt-1">Total Songs</div>
+            </div>
+          </Link>
+
+          {/* Pill 4: Active Setlists */}
+          <Link
+            href="/setlists"
+            className="rounded-[28px] border border-border/70 bg-card p-5 flex flex-col items-center justify-center text-center gap-2.5 shadow-[0_2px_12px_rgba(15,37,74,0.04)] hover:border-primary/35 transition-all"
+          >
+            <div className="w-11 h-11 rounded-full bg-secondary text-primary flex items-center justify-center">
+              <CalendarDays className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-primary leading-tight">
                 {loading ? "..." : data.totalSetlists}
               </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Setlists</div>
             </div>
-            <MiniSparkline heights={[30, 50, 80, 95, 45]} />
-          </div>
-          <div className="px-4 py-2 bg-secondary/70 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Schedule status</span>
-            <span className="font-semibold text-primary">
-              {data.publishedSetlists} published
-            </span>
-          </div>
-        </Link>
+          </Link>
+
+          {/* Pill 5: Song Leaders */}
+          <Link
+            href="/analytics/leaders"
+            className="rounded-[28px] border border-border/70 bg-card p-5 flex flex-col items-center justify-center text-center gap-2.5 shadow-[0_2px_12px_rgba(15,37,74,0.04)] hover:border-primary/35 transition-all col-span-2 sm:col-span-1"
+          >
+            <div className="w-11 h-11 rounded-full bg-secondary text-primary flex items-center justify-center">
+              <Mic2 className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-primary leading-tight">
+                {VOCAL_LEADS.length}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Song Leaders</div>
+            </div>
+          </Link>
+        </div>
       </div>
 
-      {/* Middle 2-Column Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+      {/* Middle 2-Column Soft Rounded Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch pt-1">
         {/* Left (2/3): Upcoming Sunday Lineup */}
-        <div className="lg:col-span-2 rounded-xl border border-border bg-card flex flex-col">
-          <div className="px-5 py-3.5 border-b border-border flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-primary">
-                Upcoming Sunday Lineup
-              </h2>
-              <Info className="w-3.5 h-3.5 text-muted-foreground" />
+        <div className="lg:col-span-2 rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] flex flex-col space-y-5">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-primary">Upcoming Sunday Lineup</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {data.nextSetlist
+                  ? `${data.nextSetlist.service_date} • ${upcomingSongs.length} scheduled songs`
+                  : "No Sunday setlist scheduled yet"}
+              </p>
             </div>
 
             {data.nextSetlist && (
               <Link
                 href={`/setlists/${data.nextSetlist.id}`}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-border bg-card hover:bg-secondary text-xs font-semibold text-primary transition-colors"
               >
                 <span>Open Setlist</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -297,226 +273,182 @@ export function DashboardOverview() {
             )}
           </div>
 
-          <div className="p-5 flex-1 space-y-4">
-            {data.nextSetlist ? (
-              <>
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <div>
-                    <div className="text-xs text-muted-foreground">Scheduled Service</div>
-                    <div className="text-lg font-bold text-primary">
-                      {data.nextSetlist.service_date} — {upcomingSongs.length} Songs
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>
-                      Leader: <strong className="text-foreground">{data.nextSetlist.song_leader_name || "TBD"}</strong>
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Backup: <strong className="text-foreground">{data.nextSetlist.backup_singer_name || "None"}</strong>
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Drums: <strong className="text-foreground">{data.nextSetlist.drummer_name || "TBD"}</strong>
-                    </span>
-                  </div>
+          {data.nextSetlist ? (
+            <div className="space-y-2.5 flex-1">
+              {upcomingSongs.length === 0 ? (
+                <div className="p-8 text-center text-xs text-muted-foreground rounded-2xl bg-secondary/40">
+                  No songs added to this setlist yet.
                 </div>
-
-                {/* Clean White Song List with Deep Navy Key Badges */}
-                <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
-                  {upcomingSongs.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">
-                      No songs added to this setlist yet.
+              ) : (
+                upcomingSongs.map((song, idx) => (
+                  <Link
+                    key={song.id || idx}
+                    href={`/songs/${song.song_id}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-secondary/45 hover:bg-secondary/80 transition-colors"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <span className="w-8 h-8 rounded-full bg-card border border-border/80 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                        {idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-foreground truncate">
+                          {song.title}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {song.artist}
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    upcomingSongs.map((song, idx) => (
-                      <Link
-                        key={song.id || idx}
-                        href={`/songs/${song.song_id}`}
-                        className="flex items-center justify-between gap-3 px-4 py-3 bg-card hover:bg-secondary/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-5 text-xs font-mono font-semibold text-primary/70">
-                            {idx + 1}.
-                          </span>
-                          <div className="min-w-0">
-                            <div className="text-xs font-semibold text-foreground truncate">
-                              {song.title}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground truncate">
-                              {song.artist}
-                            </div>
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-2.5 shrink-0">
-                          <span className="px-2 py-0.5 rounded-md border border-border bg-secondary text-[11px] font-medium text-primary capitalize">
-                            {song.category}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded-md bg-primary text-primary-foreground text-xs font-mono font-bold min-w-[38px] text-center">
-                            {song.assigned_key}
-                          </span>
-                          {song.bpm && (
-                            <span className="hidden sm:inline text-[11px] font-mono text-muted-foreground w-14 text-right">
-                              {song.bpm} BPM
-                            </span>
-                          )}
-                        </div>
-                      </Link>
-                    ))
-                  )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="hidden sm:inline-block px-3 py-1 rounded-full bg-card border border-border/70 text-[11px] font-medium text-muted-foreground capitalize">
+                        {song.category}
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-mono font-bold min-w-[40px] text-center">
+                        {song.assigned_key}
+                      </span>
+                    </div>
+                  </Link>
+                ))
+              )}
+
+              {data.nextSetlist.notes && (
+                <div className="px-4 py-3 rounded-2xl border border-border/70 bg-background text-xs text-muted-foreground mt-3">
+                  <strong className="text-primary font-semibold">Notes:</strong>{" "}
+                  {data.nextSetlist.notes}
                 </div>
-
-                {data.nextSetlist.notes && (
-                  <div className="px-3.5 py-2.5 rounded-lg bg-secondary/60 border border-border text-xs text-muted-foreground">
-                    <strong className="text-primary font-semibold">Notes:</strong>{" "}
-                    {data.nextSetlist.notes}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="py-10 text-center space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  No Sunday setlist scheduled yet.
-                </p>
-                <Link
-                  href="/setlists/new"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
-                >
-                  Create Setlist
-                </Link>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-10 text-center space-y-3">
+              <p className="text-xs text-muted-foreground">No Sunday setlist scheduled yet.</p>
+              <Link
+                href="/setlists/new"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-semibold"
+              >
+                Create Setlist
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Right (1/3): Team & Rehearsal Card */}
-        <div className="rounded-xl border border-border bg-card flex flex-col">
-          <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Team &amp; Rehearsal
-            </h2>
-            <Link
-              href="/admin/team"
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              Roster
-            </Link>
-          </div>
-
-          <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
-            {/* Schedule & Readiness Bar */}
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs text-muted-foreground">Weekly Schedule</div>
-                <div className="text-base font-bold text-primary mt-0.5">
-                  Sun 9:00 AM &amp; 2:30 PM
-                </div>
-              </div>
-
-              {/* Readiness Meter */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">Rehearsal Readiness</span>
-                  <span className="font-mono font-bold text-primary">{data.readinessPct}%</span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-300"
-                    style={{ width: `${Math.max(8, data.readinessPct)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* AI Insight Bar */}
+        {/* Right (1/3): Sunday Duty & Schedule (Jobgio Pending Approvals style) */}
+        <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] flex flex-col justify-between space-y-5">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-primary">Sunday Duty</h2>
               <Link
-                href="/chat"
-                className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-primary/20 bg-secondary hover:bg-accent transition-colors text-xs text-primary"
+                href="/admin/team"
+                className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
               >
-                <span className="flex items-center gap-2 font-semibold truncate">
-                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span className="truncate">Get AI insight for Sunday rehearsal</span>
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 text-primary shrink-0" />
+                Roster
               </Link>
             </div>
 
-            {/* Clean Roster Breakdown */}
-            <div className="space-y-3 pt-1">
-              <div className="space-y-1.5">
-                <div className="text-[11px] font-semibold text-muted-foreground">
-                  Vocal Song Leaders (5)
+            {/* Clean Duty Rows */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-foreground truncate">
+                      {data.nextSetlist?.song_leader_name || "France"}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">Sun 9:00 AM &amp; 2:30 PM</div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {VOCAL_LEADS.map((name) => (
-                    <span
-                      key={name}
-                      className="px-2.5 py-1 rounded-md border border-border bg-secondary/60 text-xs font-medium text-primary"
-                    >
-                      {name}
-                    </span>
-                  ))}
-                </div>
+                <span className="px-3 py-1 rounded-full bg-secondary text-[11px] font-semibold text-primary shrink-0">
+                  Lead
+                </span>
               </div>
 
-              <div className="space-y-1.5">
-                <div className="text-[11px] font-semibold text-muted-foreground">
-                  Drummers (Alternating)
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-secondary text-primary flex items-center justify-center shrink-0">
+                    <Mic2 className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-foreground truncate">
+                      {data.nextSetlist?.backup_singer_name || "Andrei"}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">Vocal Harmony</div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {DRUMMERS.map((name) => (
-                    <span
-                      key={name}
-                      className="px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium"
-                    >
-                      {name}
-                    </span>
-                  ))}
+                <span className="px-3 py-1 rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground shrink-0">
+                  Backup
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-secondary text-primary flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-foreground truncate">
+                      {data.nextSetlist?.drummer_name || "Aeron"}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">Alternating Rotation</div>
+                  </div>
                 </div>
+                <span className="px-3 py-1 rounded-full bg-secondary text-[11px] font-semibold text-muted-foreground shrink-0">
+                  Drums
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Readiness & AI Action */}
+          <div className="space-y-3 pt-4 border-t border-border/70">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground font-medium">Practice Readiness</span>
+                <span className="font-bold text-primary">{data.readinessPct}%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${Math.max(8, data.readinessPct)}%` }}
+                />
               </div>
             </div>
 
-            {/* Weekly Steps */}
-            <div className="pt-3 border-t border-border space-y-1.5 text-xs text-muted-foreground">
-              <div className="flex justify-between">
-                <span>Mon – Sat</span>
-                <span className="font-semibold text-primary">Home Practice</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Sunday 9:00 AM</span>
-                <span className="font-semibold text-primary">Full Rehearsal</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Sunday 2:30 PM</span>
-                <span className="font-semibold text-primary">Live Service</span>
-              </div>
-            </div>
+            <Link
+              href="/chat"
+              className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-full bg-secondary hover:bg-accent transition-colors text-xs text-primary font-semibold"
+            >
+              <span className="flex items-center gap-2 truncate">
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">AI Rehearsal Insight</span>
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Bottom Full-Width Table: Repertoire & Rotation */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-primary">
-            Song Library &amp; Rotation
-          </h2>
+      {/* Bottom Full-Width Soft Rounded Card (Jobgio Manage Jobs style) */}
+      <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-[0_2px_12px_rgba(15,37,74,0.04)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-base font-bold text-primary">Manage Songs &amp; Rotation</h2>
 
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={tableSearch}
                 onChange={(e) => setTableSearch(e.target.value)}
                 placeholder="Search songs..."
-                className="h-8 w-44 sm:w-56 pl-8 pr-3 rounded-lg border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="h-9 w-44 sm:w-56 pl-9 pr-3.5 rounded-full border border-border bg-background text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             <Link
               href="/songs/new"
-              className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity shrink-0"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Song</span>
@@ -524,63 +456,57 @@ export function DashboardOverview() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-border bg-secondary/60 text-[11px] font-semibold uppercase tracking-wider text-primary/80">
-                <th className="py-2.5 px-5">Song Title</th>
-                <th className="py-2.5 px-4">Artist</th>
-                <th className="py-2.5 px-4">Category</th>
-                <th className="py-2.5 px-4">Key</th>
-                <th className="py-2.5 px-4">Plays</th>
-                <th className="py-2.5 px-4">Last Sung</th>
-                <th className="py-2.5 px-5 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border text-xs">
-              {filteredTableSongs.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-muted-foreground">
-                    No matching songs found.
-                  </td>
-                </tr>
-              ) : (
-                filteredTableSongs.map((song) => (
-                  <tr
-                    key={song.songId + song.title}
-                    className="hover:bg-secondary/40 transition-colors"
-                  >
-                    <td className="py-3 px-5 font-semibold text-foreground">{song.title}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{song.artist}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block px-2 py-0.5 rounded-md border border-border bg-secondary text-[11px] font-medium text-primary capitalize">
-                        {song.category}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary font-mono font-bold">
-                        {song.originalKey}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-muted-foreground">
-                      {song.playCount}
-                    </td>
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {song.lastPlayedDate || "Not yet played"}
-                    </td>
-                    <td className="py-3 px-5 text-right">
-                      <Link
-                        href={`/songs/${song.songId}`}
-                        className="text-xs font-semibold text-primary hover:underline"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {/* Column Header Row */}
+        <div className="hidden md:grid grid-cols-12 gap-3 px-4 pt-1 text-[11px] font-medium text-muted-foreground">
+          <div className="col-span-4">Song Title</div>
+          <div className="col-span-3">Artist</div>
+          <div className="col-span-2">Category</div>
+          <div className="col-span-1">Key</div>
+          <div className="col-span-2 text-right">Last Sung</div>
+        </div>
+
+        {/* Floating Soft Rounded Rows */}
+        <div className="space-y-2">
+          {filteredTableSongs.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground rounded-2xl bg-secondary/40">
+              No matching songs found.
+            </div>
+          ) : (
+            filteredTableSongs.map((song) => (
+              <Link
+                key={song.songId + song.title}
+                href={`/songs/${song.songId}`}
+                className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-3 px-4 py-3 rounded-2xl bg-secondary/40 hover:bg-secondary/75 transition-colors text-xs"
+              >
+                <div className="md:col-span-4 flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-card border border-border/70 flex items-center justify-center text-primary shrink-0">
+                    <Music className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-semibold text-foreground truncate">{song.title}</span>
+                </div>
+
+                <div className="md:col-span-3 text-muted-foreground truncate pl-11 md:pl-0">
+                  {song.artist}
+                </div>
+
+                <div className="md:col-span-2 pl-11 md:pl-0">
+                  <span className="inline-block px-3 py-1 rounded-full bg-card border border-border/70 text-[11px] font-medium text-primary capitalize">
+                    {song.category}
+                  </span>
+                </div>
+
+                <div className="md:col-span-1 pl-11 md:pl-0">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground font-mono font-bold text-[11px]">
+                    {song.originalKey}
+                  </span>
+                </div>
+
+                <div className="md:col-span-2 md:text-right text-muted-foreground pl-11 md:pl-0">
+                  {song.lastPlayedDate || "Fresh"}
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </div>
     </div>
