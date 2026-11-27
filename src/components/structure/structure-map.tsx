@@ -79,8 +79,8 @@ export function StructureMap({
         const dynamicsInfo = dynamics ? DYNAMICS_CONFIG[dynamics] : null
 
         const sizeClasses = {
-          sm: "px-2 py-1 text-[10px]",
-          md: "px-2.5 py-1.5 text-xs",
+          sm: "px-2.5 py-1 text-[11px]",
+          md: "px-3 py-1.5 text-xs",
           lg: "px-3.5 py-2 text-sm",
         }[size]
 
@@ -95,19 +95,19 @@ export function StructureMap({
                   ? `${section.name}: ${section.notes}`
                   : `${section.name} (${section.bars || 8} bars)`
               }
-              className={`group relative inline-flex items-center gap-1.5 font-bold rounded-lg border transition-all select-none ${sizeClasses} ${
+              className={`group relative inline-flex items-center gap-1.5 font-semibold rounded-md border transition-all select-none ${sizeClasses} ${
                 config.color.bg
               } ${config.color.border} ${config.color.text} ${
                 interactive ? "cursor-pointer hover:scale-105 active:scale-95 shadow-xs" : "cursor-default"
               } ${
                 isActive
                   ? `ring-2 ring-offset-2 ${config.color.activeRing} ring-offset-background scale-105 shadow-md`
-                  : "opacity-90 hover:opacity-100"
+                  : ""
               }`}
             >
               {/* Active pulsing dot */}
               {isActive && (
-                <span className="flex h-2 w-2 rounded-full bg-primary animate-ping shrink-0" />
+                <span className="flex h-2 w-2 rounded-full bg-current animate-ping shrink-0" />
               )}
 
               {/* Section Name */}
@@ -115,7 +115,7 @@ export function StructureMap({
 
               {/* Repeats Badge (e.g. x2) */}
               {repeats > 1 && (
-                <span className="px-1 py-0.2 rounded text-[10px] font-extrabold bg-foreground/10 text-foreground">
+                <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${config.color.badgeBg}`}>
                   x{repeats}
                 </span>
               )}
@@ -140,7 +140,7 @@ export function StructureMap({
               {/* Notes Indicator */}
               {section.notes && (
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"
+                  className="w-1.5 h-1.5 rounded-full bg-current opacity-55 shrink-0"
                   title={section.notes}
                 />
               )}
