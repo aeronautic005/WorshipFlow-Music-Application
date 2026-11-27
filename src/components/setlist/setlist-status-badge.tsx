@@ -6,10 +6,10 @@ interface SetlistStatusBadgeProps {
   publishedAt?: string | null
 }
 
-export function SetlistStatusBadge({ status, publishedAt }: SetlistStatusBadgeProps) {
+export function SetlistStatusBadge({ status }: SetlistStatusBadgeProps) {
   if (status === "published") {
     return (
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
         <CheckCircle2 className="h-3.5 w-3.5" />
         <span>Published</span>
       </div>
@@ -18,7 +18,7 @@ export function SetlistStatusBadge({ status, publishedAt }: SetlistStatusBadgePr
 
   if (status === "draft") {
     return (
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-secondary border border-border text-muted-foreground text-xs font-semibold">
         <Clock className="h-3.5 w-3.5" />
         <span>Draft</span>
       </div>
@@ -26,7 +26,7 @@ export function SetlistStatusBadge({ status, publishedAt }: SetlistStatusBadgePr
   }
 
   return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted border border-border/40 text-muted-foreground text-xs font-semibold">
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-muted border border-border text-muted-foreground text-xs font-semibold">
       <Archive className="h-3.5 w-3.5" />
       <span>Archived</span>
     </div>
