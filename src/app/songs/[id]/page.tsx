@@ -171,17 +171,28 @@ export default function SongDetailPage() {
               <p className="text-sm text-muted-foreground font-medium">{song.artist}</p>
             </div>
 
-            {/* Key & BPM Highlights */}
-            <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
-              <div className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground font-bold text-sm">
-                Orig. Key: {song.original_key}
-              </div>
+            {/* Key & BPM Highlight Stat Tiles */}
+            <div className="flex items-center gap-2.5 shrink-0">
               {song.bpm && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{song.bpm} BPM</span>
+                <div className="flex flex-col items-center justify-center px-4 py-2 rounded-2xl bg-secondary border border-primary/20 min-w-[96px]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Clock className="h-3 w-3 text-primary" />
+                    <span>Tempo</span>
+                  </span>
+                  <span className="text-base sm:text-lg font-extrabold text-primary leading-tight mt-0.5">
+                    {song.bpm} <span className="text-xs font-bold">BPM</span>
+                  </span>
                 </div>
               )}
+
+              <div className="flex flex-col items-center justify-center px-4 py-2 rounded-2xl bg-primary text-primary-foreground min-w-[96px] shadow-xs">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/75">
+                  Orig. Key
+                </span>
+                <span className="text-base sm:text-lg font-extrabold leading-tight mt-0.5">
+                  {song.original_key}
+                </span>
+              </div>
             </div>
           </div>
 
