@@ -131,7 +131,7 @@ export default function SetlistsPage() {
             </Link>
 
             <Link
-              href="/setlists/new"
+              href="/setlists/builder"
               className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
             >
               <Plus className="w-3.5 h-3.5" />

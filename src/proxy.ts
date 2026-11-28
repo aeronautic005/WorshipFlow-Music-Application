@@ -50,14 +50,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
-  // If not logged in and visiting protected routes, redirect to login
+  // Only enforce login redirects when NEXT_PUBLIC_REQUIRE_AUTH is explicitly enabled
+  const requireAuth = process.env.NEXT_PUBLIC_REQUIRE_AUTH === "true"
+
   const isProtectedAction =
     pathname.startsWith("/setlists/new") ||
     pathname.startsWith("/songs/new") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/profile")
 
-  if (!user && isProtectedAction) {
+  if (requireAuth && !user && isProtectedAction) {
     const redirectUrl = new URL("/login", request.url)
     redirectUrl.searchParams.set("redirect", pathname)
     return NextResponse.redirect(redirectUrl)
