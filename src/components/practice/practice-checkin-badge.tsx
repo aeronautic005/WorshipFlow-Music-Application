@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CheckCircle2, AlertCircle, Circle, Loader2, NotebookPen } from "lucide-react"
 import type { PracticeStatusType } from "@/types/database"
 import { updatePracticeStatus, type PracticeStatusRecord } from "@/lib/practice"
@@ -32,6 +32,10 @@ export function PracticeCheckinBadge({
   const [notesModalOpen, setNotesModalOpen] = useState(false)
   const [savedNotes, setSavedNotes] = useState<string | null>(null)
 
+  useEffect(() => {
+    setStatus(currentStatus)
+  }, [currentStatus])
+
   const handleSelectStatus = async (newStatus: PracticeStatusType) => {
     if (newStatus === status || loading) return
     setLoading(true)
@@ -56,18 +60,18 @@ export function PracticeCheckinBadge({
   const isSmall = size === "sm"
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-lg border bg-background/90 p-0.5 shadow-2xs">
+    <div className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary/50 p-1">
       {/* Ready */}
       <button
         type="button"
         disabled={loading}
         onClick={() => handleSelectStatus("ready")}
-        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 font-semibold transition ${
+        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
           isSmall ? "text-[10px]" : "text-xs"
         } ${
           status === "ready"
-            ? "bg-emerald-500 text-white shadow-xs"
-            : "text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400"
+            ? "bg-emerald-600 text-white shadow-xs"
+            : "text-muted-foreground hover:bg-card hover:text-foreground"
         }`}
         title="I know this song well for Sunday"
       >
@@ -80,12 +84,12 @@ export function PracticeCheckinBadge({
         type="button"
         disabled={loading}
         onClick={() => handleSelectStatus("needs_work")}
-        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 font-semibold transition ${
+        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
           isSmall ? "text-[10px]" : "text-xs"
         } ${
           status === "needs_work"
             ? "bg-amber-500 text-white shadow-xs"
-            : "text-muted-foreground hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400"
+            : "text-muted-foreground hover:bg-card hover:text-foreground"
         }`}
         title="Need to practice bridge or transitions"
       >
@@ -98,12 +102,12 @@ export function PracticeCheckinBadge({
         type="button"
         disabled={loading}
         onClick={() => handleSelectStatus("not_started")}
-        className={`inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium transition ${
+        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-medium transition cursor-pointer ${
           isSmall ? "text-[10px]" : "text-xs"
         } ${
           status === "not_started"
-            ? "bg-muted text-foreground"
-            : "text-muted-foreground/60 hover:bg-muted/60 hover:text-foreground"
+            ? "bg-card text-foreground shadow-2xs"
+            : "text-muted-foreground hover:bg-card hover:text-foreground"
         }`}
         title="Haven't practiced yet"
       >
@@ -115,10 +119,10 @@ export function PracticeCheckinBadge({
       <button
         type="button"
         onClick={() => setNotesModalOpen(true)}
-        className={`p-1 rounded-md transition ${
+        className={`p-1.5 rounded-full transition cursor-pointer ${
           savedNotes
-            ? "text-primary hover:bg-primary/10"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            ? "bg-primary text-primary-foreground"
+            : "text-muted-foreground hover:bg-card hover:text-foreground"
         }`}
         title={savedNotes ? `Notes: ${savedNotes}` : "Add private practice notes"}
       >
