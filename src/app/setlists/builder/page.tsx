@@ -5,13 +5,17 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { AppShell } from "@/components/layout/app-shell"
 import { SongPickerModal } from "@/components/setlist/song-picker-modal"
-import { createSetlist } from "@/lib/setlists"
+import { createSetlist, getSetlistById } from "@/lib/setlists"
 import { getPreferredKeyForLeader } from "@/lib/song-leader-keys"
 import { detectRecentRepeats, type RepeatWarning } from "@/lib/analytics"
 import type { Song, SongCategory } from "@/types/database"
 import {
   ArrowLeft,
   Calendar,
+  User,
+  Mic2,
+  Music2,
+  FileText,
   Plus,
   Trash2,
   Sun,
@@ -31,6 +35,24 @@ const MUSICAL_KEYS = [
   "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B",
 ]
 
+const SONG_LEADERS = [
+  { id: "france-id", name: "France" },
+  { id: "maegan-id", name: "Maegan" },
+  { id: "andrei-id", name: "Andrei" },
+]
+
+const BACKUP_VOCALISTS = [
+  { id: "", name: "None / Solo" },
+  { id: "andrei-id", name: "Andrei" },
+  { id: "france-id", name: "France" },
+  { id: "maegan-id", name: "Maegan" },
+]
+
+const DRUMMERS = [
+  { id: "aeron-id", name: "Aeron" },
+  { id: "kyle-id", name: "Kyle" },
+]
+
 interface SelectedSetlistSong {
   song_id: string
   title: string
@@ -42,17 +64,24 @@ interface SelectedSetlistSong {
   is_auto_filled?: boolean
 }
 
+function getNextSunday(): string {
+  const now = new Date()
+  const daysUntilSunday = (7 - now.getDay()) % 7 || 7
+  const nextSunday = new Date(now.getTime() + daysUntilSunday * 86400000)
+  return nextSunday.toISOString().split("T")[0]
+}
+
 function BuilderContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const editSetlistId = searchParams.get("id")
 
-  const initialDate = searchParams.get("date") || ""
-  const songLeaderId = searchParams.get("leader") || "france-id"
-  const backupSingerId = searchParams.get("backup") || ""
-  const drummerId = searchParams.get("drummer") || "aeron-id"
-  const notes = searchParams.get("notes") || ""
+  const [serviceDate, setServiceDate] = useState(searchParams.get("date") || "")
+  const [songLeaderId, setSongLeaderId] = useState(searchParams.get("leader") || "france-id")
+  const [backupSingerId, setBackupSingerId] = useState(searchParams.get("backup") || "")
+  const [drummerId, setDrummerId] = useState(searchParams.get("drummer") || "aeron-id")
+  const [notes, setNotes] = useState(searchParams.get("notes") || "")
 
-  const [serviceDate, setServiceDate] = useState(initialDate)
   const [selectedSongs, setSelectedSongs] = useState<SelectedSetlistSong[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [modalCategory, setModalCategory] = useState<SongCategory>("joyful")
@@ -61,15 +90,38 @@ function BuilderContent() {
   const [repeatWarnings, setRepeatWarnings] = useState<RepeatWarning[]>([])
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
 
-  // Default to upcoming Sunday if no date was passed via query params
+  // Default to upcoming Sunday or load existing setlist when editing (?id=...)
   useEffect(() => {
-    if (!serviceDate) {
-      const now = new Date()
-      const daysUntilSunday = (7 - now.getDay()) % 7 || 7
-      const nextSunday = new Date(now.getTime() + daysUntilSunday * 86400000)
-      setServiceDate(nextSunday.toISOString().split("T")[0])
+    async function init() {
+      if (editSetlistId) {
+        const existing = await getSetlistById(editSetlistId)
+        if (existing) {
+          setServiceDate(existing.service_date)
+          setSongLeaderId(existing.song_leader_id || "france-id")
+          setBackupSingerId(existing.backup_singer_id || "")
+          setDrummerId(existing.drummer_id || "aeron-id")
+          setNotes(existing.notes || "")
+          setSelectedSongs(
+            (existing.songs || []).map((s) => ({
+              song_id: s.song_id,
+              title: s.title,
+              artist: s.artist,
+              category: s.category,
+              original_key: s.original_key,
+              assigned_key: s.assigned_key,
+              reference_url: s.reference_url || "",
+            }))
+          )
+          return
+        }
+      }
+      if (!serviceDate) {
+        setServiceDate(getNextSunday())
+      }
     }
-  }, [serviceDate])
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editSetlistId])
 
   useEffect(() => {
     let active = true
@@ -83,9 +135,6 @@ function BuilderContent() {
       active = false
     }
   }, [selectedSongs])
-
-  const joyfulSongs = selectedSongs.filter((s) => s.category === "joyful")
-  const worshipSongs = selectedSongs.filter((s) => s.category === "worship")
 
   const handleOpenPicker = (cat: SongCategory) => {
     setModalCategory(cat)
@@ -165,6 +214,10 @@ function BuilderContent() {
   }
 
   const handleSave = async (status: "draft" | "published") => {
+    if (!serviceDate) {
+      setError("Please select a Sunday service date.")
+      return
+    }
     if (selectedSongs.length === 0) {
       setError("Please add at least one song to your setlist.")
       return
@@ -174,12 +227,12 @@ function BuilderContent() {
     setError(null)
 
     const payload = {
-      service_date: serviceDate || new Date().toISOString().split("T")[0],
+      service_date: serviceDate,
       song_leader_id: songLeaderId,
       backup_singer_id: backupSingerId || null,
       drummer_id: drummerId || null,
       status,
-      notes,
+      notes: notes.trim() || null,
       songs: selectedSongs.map((s, idx) => ({
         song_id: s.song_id,
         title: s.title,
@@ -356,29 +409,118 @@ function BuilderContent() {
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Setlists</span>
         </Link>
-
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs">
-          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-muted-foreground font-medium">Service Date</span>
-          <input
-            type="date"
-            aria-label="Service date"
-            value={serviceDate}
-            onChange={(e) => setServiceDate(e.target.value)}
-            className="bg-transparent font-bold text-foreground focus:outline-none cursor-pointer"
-          />
-        </div>
       </div>
 
       {/* Header */}
       <div className="space-y-1 px-1">
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-          Select Songs &amp; Assign Keys
+          {editSetlistId ? "Edit Sunday Setlist" : "Build Sunday Setlist"}
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          Standard church lineup: <strong className="text-foreground">2–3 Joyful (Fast)</strong> songs followed by{" "}
-          <strong className="text-foreground">2–3 Worship (Slow)</strong> songs.
+          Assign the Sunday service date, worship team rotation, and song lineup in one place.
         </p>
+      </div>
+
+      {/* Unified Service & Team Rotation Setup Card */}
+      <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="pb-3 border-b border-border/70">
+          <h2 className="text-sm font-bold text-foreground">Service &amp; Team Rotation</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Choose the Sunday date, song leader, backup vocalist, and assigned drummer.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Service Date */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>Service Date</span>
+            </label>
+            <input
+              type="date"
+              aria-label="Service date"
+              value={serviceDate}
+              onChange={(e) => setServiceDate(e.target.value)}
+              className="w-full h-10 px-3.5 rounded-2xl border border-border bg-secondary/35 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            />
+          </div>
+
+          {/* Song Leader */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5" />
+              <span>Song Leader</span>
+            </label>
+            <select
+              aria-label="Song leader"
+              value={songLeaderId}
+              onChange={(e) => setSongLeaderId(e.target.value)}
+              className="w-full h-10 px-3.5 rounded-2xl border border-border bg-secondary/35 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              {SONG_LEADERS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Backup Vocalist */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Mic2 className="h-3.5 w-3.5" />
+              <span>Backup Vocals</span>
+            </label>
+            <select
+              aria-label="Backup vocalist"
+              value={backupSingerId}
+              onChange={(e) => setBackupSingerId(e.target.value)}
+              className="w-full h-10 px-3.5 rounded-2xl border border-border bg-secondary/35 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              {BACKUP_VOCALISTS.map((v) => (
+                <option key={v.id || "none"} value={v.id}>
+                  {v.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Drummer Rotation */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Music2 className="h-3.5 w-3.5" />
+              <span>Drummer</span>
+            </label>
+            <select
+              aria-label="Drummer"
+              value={drummerId}
+              onChange={(e) => setDrummerId(e.target.value)}
+              className="w-full h-10 px-3.5 rounded-2xl border border-border bg-secondary/35 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+            >
+              {DRUMMERS.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Service Notes */}
+        <div className="space-y-1.5 pt-1">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5" />
+            <span>Service Notes (Optional)</span>
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Communion Sunday, smooth pad transition between Song 2 and Song 3..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full h-10 px-3.5 rounded-2xl border border-border bg-secondary/35 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
       </div>
 
       {/* Repeat Detector Warning Banner */}
