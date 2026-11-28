@@ -8,15 +8,15 @@ export function StructureLegend() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="rounded-xl border bg-card/60 overflow-hidden text-xs transition">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden text-xs transition shadow-2xs">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 text-left font-semibold hover:bg-muted/30 transition text-muted-foreground hover:text-foreground"
+        className="w-full flex items-center justify-between px-4 py-3 text-left font-semibold hover:bg-secondary/40 transition text-muted-foreground hover:text-foreground cursor-pointer"
       >
         <div className="flex items-center gap-2">
-          <HelpCircle className="w-3.5 h-3.5 text-primary" />
-          <span>Structure Blueprint Guide & Legend</span>
+          <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
+          <span>Structure Blueprint Guide &amp; Legend</span>
         </div>
         {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </button>

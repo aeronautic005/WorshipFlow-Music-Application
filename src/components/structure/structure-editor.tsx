@@ -182,10 +182,10 @@ export function StructureEditor({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Structure Lock Alert Banner */}
       {isSetlistOverride && (
-        <div className="flex items-center justify-between p-3.5 rounded-xl border bg-muted/40">
+        <div className="flex items-center justify-between p-4 rounded-2xl border border-border bg-card">
           <StructureLockBadge
             isLocked={isLocked}
             onToggle={handleToggleLock}
@@ -193,74 +193,6 @@ export function StructureEditor({
           />
         </div>
       )}
-
-      {/* Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border bg-card/60">
-        <div>
-          <h3 className="font-bold text-base flex items-center gap-2">
-            <Music className="w-4 h-4 text-primary" />
-            <span>{isSetlistOverride ? "Custom Service Arrangement" : "Default Structure Blueprint"}</span>
-            {isLocked && <Lock className="w-4 h-4 text-amber-500" />}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {isSetlistOverride
-              ? `Arrange exact flow for ${songTitle || "this song"} during live service.`
-              : `Standard arrangement blueprint for ${songTitle || "this song"}.`}
-          </p>
-        </div>
-
-        {/* Preset Selector & Save */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {!isLocked && (
-            <>
-              <AiGenerateButton
-                isLoading={aiExtracting}
-                loadingText="Detecting..."
-                onClick={handleAiExtract}
-                className="h-8 py-1 px-3 text-xs"
-              >
-                Auto-Detect Structure
-              </AiGenerateButton>
-
-              <select
-                aria-label="Load preset blueprint"
-                className="text-xs px-2.5 py-1.5 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                onChange={(e) => {
-                  if (e.target.value) handleLoadPreset(e.target.value)
-                }}
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Load preset blueprint...
-                </option>
-                {STRUCTURE_PRESETS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-
-          <button
-            onClick={handleSave}
-            disabled={saving || isLocked}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-sm disabled:opacity-50"
-          >
-            {savedSuccess ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-200" />
-                <span>Saved!</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-3.5 h-3.5" />
-                <span>{saving ? "Saving..." : isLocked ? "Locked" : "Save Structure"}</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
 
       {/* AI Structure Suggestion Preview & Accept Card */}
       {aiResult && (
@@ -276,223 +208,300 @@ export function StructureEditor({
           isRegenerating={aiExtracting}
         >
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-1.5 p-3 rounded-xl bg-background border border-border/80">
-              {aiResult.sections.map((sec, idx) => {
-                const config = SECTION_CONFIGS[sec.type] || SECTION_CONFIGS.verse
-                return (
-                  <span
-                    key={sec.id || idx}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${config.color.bg} ${config.color.text} ${config.color.border}`}
-                  >
-                    <span>{sec.name}</span>
-                    <span className="text-[10px] opacity-75 font-mono">
-                      {sec.bars || 8}b{sec.repeats && sec.repeats > 1 ? ` ×${sec.repeats}` : ""}
-                    </span>
+            <div className="flex flex-wrap gap-1.5 p-3 rounded-2xl bg-secondary/40 border border-border">
+              {aiResult.sections.map((sec, idx) => (
+                <span
+                  key={sec.id || idx}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-black text-white"
+                >
+                  <span>{sec.name}</span>
+                  <span className="text-[10px] opacity-75 font-mono">
+                    {sec.bars || 8}b{sec.repeats && sec.repeats > 1 ? ` ×${sec.repeats}` : ""}
                   </span>
-                )
-              })}
+                </span>
+              ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              Review the suggested arrangement above. Clicking &quot;Accept & Apply Blueprint&quot; will load these sections into the interactive editor for fine-tuning.
+              Review the suggested arrangement above, then click &quot;Accept &amp; Apply Blueprint&quot; to load it into the editor.
             </p>
           </div>
         </AiResultCard>
       )}
 
-      {/* Sections List */}
-      <div className="space-y-2.5">
+      {/* Main Unified Blueprint Editor Card */}
+      <div className="rounded-3xl border border-border bg-card shadow-xs overflow-hidden">
+        {/* Toolbar Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-5 border-b border-border/80">
+          <div>
+            <h2 className="font-bold text-sm text-foreground flex items-center gap-2">
+              <span>{isSetlistOverride ? "Custom Service Arrangement" : "Arrangement Blueprint"}</span>
+              <span className="px-2 py-0.5 rounded-full bg-secondary text-muted-foreground text-[11px] font-semibold">
+                {sections.length} {sections.length === 1 ? "section" : "sections"}
+              </span>
+              {isLocked && <Lock className="w-3.5 h-3.5 text-amber-500" />}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Reorder sections, adjust repeats &amp; bars, or add band cues.
+            </p>
+          </div>
+
+          {/* Actions Row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {!isLocked && (
+              <>
+                <AiGenerateButton
+                  isLoading={aiExtracting}
+                  loadingText="Detecting..."
+                  onClick={handleAiExtract}
+                  className="h-9 px-3.5 rounded-full text-xs"
+                >
+                  Auto-Detect
+                </AiGenerateButton>
+
+                <select
+                  aria-label="Load preset blueprint"
+                  className="h-9 text-xs font-semibold px-3.5 rounded-full border border-border bg-card text-foreground hover:bg-secondary transition focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleLoadPreset(e.target.value)
+                      e.target.value = ""
+                    }
+                  }}
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Load Preset...
+                  </option>
+                  {STRUCTURE_PRESETS.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || isLocked}
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition shadow-xs disabled:opacity-50 cursor-pointer"
+            >
+              {savedSuccess ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>Saved!</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{saving ? "Saving..." : isLocked ? "Locked" : "Save Blueprint"}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Clean White Sections List */}
         {sections.length === 0 ? (
-          <div className="text-center py-10 rounded-xl border border-dashed text-xs text-muted-foreground">
-            No sections added yet. Click one of the buttons below to begin the blueprint.
+          <div className="text-center py-12 px-4 text-xs text-muted-foreground">
+            No sections added yet. Pick a section below to start building the blueprint.
           </div>
         ) : (
-          sections.map((section, idx) => {
-            const config = SECTION_CONFIGS[section.type] || SECTION_CONFIGS.verse
+          <div className="divide-y divide-border/70">
+            {sections.map((section, idx) => {
+              const config = SECTION_CONFIGS[section.type] || SECTION_CONFIGS.verse
 
-            return (
-              <div
-                key={section.id}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border transition shadow-sm ${config.color.bg} ${config.color.border}`}
-              >
-                {/* Left: Position & Type badge & Label */}
-                <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <span className="text-xs font-mono font-bold text-muted-foreground w-5 text-center">
-                    {idx + 1}
-                  </span>
+              return (
+                <div
+                  key={section.id}
+                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-5 py-3.5 hover:bg-secondary/25 transition-colors"
+                >
+                  {/* Left: Index + Type + Custom Label */}
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-muted-foreground text-[11px] font-bold shrink-0">
+                      {idx + 1}
+                    </span>
 
-                  {/* Section Type Selector */}
-                  <select
-                    aria-label="Section type"
-                    value={section.type}
-                    onChange={(e) => {
-                      const newType = e.target.value as SectionType
-                      const typeConfig = SECTION_CONFIGS[newType]
-                      handleUpdate(idx, {
-                        type: newType,
-                        name: section.name.startsWith(config.label) ? typeConfig.label : section.name,
-                      })
-                    }}
-                    className={`text-xs font-bold px-2 py-1 rounded-md border font-sans cursor-pointer focus:outline-none ${config.color.badgeBg} ${config.color.text}`}
-                  >
-                    {Object.values(SECTION_CONFIGS).map((c) => (
-                      <option key={c.type} value={c.type}>
-                        {c.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Custom Label Input */}
-                  <input
-                    type="text"
-                    aria-label="Section name"
-                    value={section.name}
-                    onChange={(e) => handleUpdate(idx, { name: e.target.value })}
-                    className="text-xs font-medium px-2 py-1 rounded border bg-background/80 flex-1 max-w-[160px] focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="e.g. Verse 1"
-                  />
-                </div>
-
-                {/* Center / Right: Bars, Repeat, Dynamics */}
-                <div className="flex items-center gap-2 flex-wrap text-xs">
-                  {/* Repeats counter */}
-                  <div className="flex items-center gap-1 bg-background/70 border px-2 py-0.5 rounded-md">
-                    <span className="text-[10px] text-muted-foreground">Rep:</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleUpdate(idx, { repeats: Math.max(1, (section.repeats || 1) - 1) })
-                      }
-                      className="px-1 text-xs hover:text-primary font-bold"
+                    <select
+                      aria-label="Section type"
+                      value={section.type}
+                      disabled={isLocked}
+                      onChange={(e) => {
+                        const newType = e.target.value as SectionType
+                        const typeConfig = SECTION_CONFIGS[newType]
+                        handleUpdate(idx, {
+                          type: newType,
+                          name: section.name.startsWith(config.label) ? typeConfig.label : section.name,
+                        })
+                      }}
+                      className="h-8 text-xs font-semibold px-2.5 rounded-full border border-border bg-secondary/60 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
                     >
-                      -
-                    </button>
-                    <span className="font-mono font-bold text-xs">{section.repeats || 1}x</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleUpdate(idx, { repeats: Math.min(6, (section.repeats || 1) + 1) })
-                      }
-                      className="px-1 text-xs hover:text-primary font-bold"
-                    >
-                      +
-                    </button>
-                  </div>
+                      {Object.values(SECTION_CONFIGS).map((c) => (
+                        <option key={c.type} value={c.type}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
 
-                  {/* Bars input */}
-                  <div className="flex items-center gap-1 bg-background/70 border px-2 py-0.5 rounded-md">
-                    <span className="text-[10px] text-muted-foreground">Bars:</span>
                     <input
-                      type="number"
-                      aria-label="Number of bars"
-                      min={1}
-                      max={64}
-                      value={section.bars || 8}
-                      onChange={(e) =>
-                        handleUpdate(idx, { bars: parseInt(e.target.value) || 4 })
-                      }
-                      className="w-10 text-center font-mono text-xs bg-transparent focus:outline-none"
+                      type="text"
+                      aria-label="Section name"
+                      disabled={isLocked}
+                      value={section.name}
+                      onChange={(e) => handleUpdate(idx, { name: e.target.value })}
+                      className="h-8 text-xs font-semibold px-3 rounded-full border border-border bg-background text-foreground flex-1 min-w-[110px] max-w-[180px] focus:outline-none focus:ring-1 focus:ring-primary"
+                      placeholder="e.g. Verse 1"
                     />
                   </div>
 
-                  {/* Dynamics select */}
-                  <select
-                    aria-label="Dynamics cue"
-                    value={section.dynamics || "full_band"}
-                    onChange={(e) =>
-                      handleUpdate(idx, { dynamics: e.target.value as SectionDynamics })
-                    }
-                    className="text-[11px] px-2 py-1 rounded border bg-background/80 text-foreground cursor-pointer focus:outline-none"
-                  >
-                    {Object.entries(DYNAMICS_CONFIG).map(([key, val]) => (
-                      <option key={key} value={key}>
-                        {val.label}
-                      </option>
-                    ))}
-                  </select>
-
-                  {/* Instrument / Arrangement Note Button */}
-                  <button
-                    type="button"
-                    onClick={() => setActiveNoteSectionIndex(idx)}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[11px] font-medium transition ${
-                      section.notes
-                        ? "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-700"
-                        : "bg-background/80 text-muted-foreground hover:text-foreground"
-                    }`}
-                    title={section.notes || "Add instrument notes (drums, keys, vocals)"}
-                  >
-                    <MessageSquare className="w-3 h-3" />
-                    <span>{section.notes ? "Note" : "+ Note"}</span>
-                  </button>
-
-                  {/* Move Up / Down Buttons (hidden if locked) */}
-                  {!isLocked && (
-                    <div className="flex items-center border rounded-md bg-background/80 overflow-hidden">
+                  {/* Right: Repeats, Bars, Dynamics, Note, Order & Delete */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Repeats Stepper */}
+                    <div className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-border bg-background text-xs">
+                      <span className="text-[10px] font-medium text-muted-foreground mr-0.5">Rep</span>
                       <button
                         type="button"
-                        disabled={idx === 0}
-                        onClick={() => moveUp(idx)}
-                        className="p-1 hover:bg-muted disabled:opacity-25 transition"
-                        title="Move section earlier"
+                        disabled={isLocked}
+                        onClick={() =>
+                          handleUpdate(idx, { repeats: Math.max(1, (section.repeats || 1) - 1) })
+                        }
+                        className="w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-secondary text-foreground font-bold cursor-pointer disabled:opacity-40"
                       >
-                        <ChevronUp className="w-3.5 h-3.5" />
+                        -
                       </button>
+                      <span className="font-bold text-foreground w-5 text-center">
+                        {section.repeats || 1}x
+                      </span>
                       <button
                         type="button"
-                        disabled={idx === sections.length - 1}
-                        onClick={() => moveDown(idx)}
-                        className="p-1 hover:bg-muted disabled:opacity-25 transition border-l"
-                        title="Move section later"
+                        disabled={isLocked}
+                        onClick={() =>
+                          handleUpdate(idx, { repeats: Math.min(6, (section.repeats || 1) + 1) })
+                        }
+                        className="w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-secondary text-foreground font-bold cursor-pointer disabled:opacity-40"
                       >
-                        <ChevronDown className="w-3.5 h-3.5" />
+                        +
                       </button>
                     </div>
-                  )}
 
-                  {/* Delete button (hidden if locked) */}
-                  {!isLocked && (
+                    {/* Bars Input */}
+                    <div className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-border bg-background text-xs">
+                      <span className="text-[10px] font-medium text-muted-foreground">Bars</span>
+                      <input
+                        type="number"
+                        aria-label="Number of bars"
+                        disabled={isLocked}
+                        min={1}
+                        max={64}
+                        value={section.bars || 8}
+                        onChange={(e) =>
+                          handleUpdate(idx, { bars: parseInt(e.target.value) || 4 })
+                        }
+                        className="w-10 text-center font-bold text-xs text-foreground bg-transparent focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Dynamics Select */}
+                    <select
+                      aria-label="Dynamics cue"
+                      disabled={isLocked}
+                      value={section.dynamics || "full_band"}
+                      onChange={(e) =>
+                        handleUpdate(idx, { dynamics: e.target.value as SectionDynamics })
+                      }
+                      className="h-8 text-xs font-medium px-2.5 rounded-full border border-border bg-background text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                      {Object.entries(DYNAMICS_CONFIG).map(([key, val]) => (
+                        <option key={key} value={key}>
+                          {val.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Note Button */}
                     <button
                       type="button"
-                      onClick={() => handleRemove(idx)}
-                      className="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 transition"
-                      title="Remove section"
+                      onClick={() => setActiveNoteSectionIndex(idx)}
+                      className={`inline-flex items-center gap-1 h-8 px-3 rounded-full border text-xs font-semibold transition cursor-pointer ${
+                        section.notes
+                          ? "bg-amber-50 text-amber-900 border-amber-300"
+                          : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      }`}
+                      title={section.notes || "Add instrument cue notes"}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <MessageSquare className="w-3 h-3" />
+                      <span>{section.notes ? "Note" : "+ Note"}</span>
                     </button>
-                  )}
+
+                    {/* Move Up / Down & Delete */}
+                    {!isLocked && (
+                      <div className="inline-flex items-center gap-1 pl-1">
+                        <div className="inline-flex items-center h-8 rounded-full border border-border bg-background overflow-hidden">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => moveUp(idx)}
+                            className="h-full px-2 hover:bg-secondary disabled:opacity-25 transition cursor-pointer"
+                            title="Move up"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === sections.length - 1}
+                            onClick={() => moveDown(idx)}
+                            className="h-full px-2 hover:bg-secondary disabled:opacity-25 transition border-l border-border cursor-pointer"
+                            title="Move down"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(idx)}
+                          className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          title="Remove section"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })
+              )
+            })}
+          </div>
+        )}
+
+        {/* Quick Add Section Footer */}
+        {!isLocked && (
+          <div className="p-5 border-t border-border/80 bg-secondary/25 space-y-2.5">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Add Section
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(["intro", "verse", "pre_chorus", "chorus", "bridge", "instrumental", "tag", "outro"] as SectionType[]).map(
+                (type) => {
+                  const conf = SECTION_CONFIGS[type]
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => handleAddSection(type)}
+                      className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-border bg-card text-foreground hover:bg-secondary text-xs font-semibold transition cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span>{conf.label}</span>
+                    </button>
+                  )
+                }
+              )}
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Quick Add Bar (only shown when not locked) */}
-      {!isLocked && (
-        <div className="p-4 rounded-xl border bg-muted/20 space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Add Section to Blueprint:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {(["verse", "chorus", "bridge", "intro", "pre_chorus", "tag", "instrumental", "outro"] as SectionType[]).map(
-              (type) => {
-                const conf = SECTION_CONFIGS[type]
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => handleAddSection(type)}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-medium transition hover:scale-105 shadow-xs ${conf.color.bg} ${conf.color.border} ${conf.color.text}`}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>{conf.label}</span>
-                  </button>
-                )
-              }
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Section Notes Modal */}
       {activeNoteSectionIndex !== null && sections[activeNoteSectionIndex] && (
