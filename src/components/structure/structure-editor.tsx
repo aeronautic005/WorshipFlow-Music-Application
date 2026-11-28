@@ -425,7 +425,7 @@ export function StructureEditor({
                       onClick={() => setActiveNoteSectionIndex(idx)}
                       className={`inline-flex items-center gap-1 h-8 px-3 rounded-full border text-xs font-semibold transition cursor-pointer ${
                         section.notes
-                          ? "bg-amber-50 text-amber-900 border-amber-300"
+                          ? "bg-primary text-primary-foreground border-primary"
                           : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                       }`}
                       title={section.notes || "Add instrument cue notes"}
