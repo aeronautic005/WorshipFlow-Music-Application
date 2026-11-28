@@ -25,16 +25,35 @@ export interface SongReadinessSummary {
   percent_ready: number
 }
 
-// Local mock storage key for offline / unauthenticated practice persistence
-const PRACTICE_STORAGE_KEY = "worshipflow_practice_status_v1"
+export interface PracticeTeamMember {
+  id: string
+  name: string
+  role: string
+  label: string
+}
 
-// Pre-seeded practice readiness from team members (France, Aeron, Andrei, Kyle)
+export const PRACTICE_TEAM_ROSTER: PracticeTeamMember[] = [
+  { id: "aeron-id", name: "Aeron", role: "Drums", label: "Aeron — Drums" },
+  { id: "kyle-id", name: "Kyle", role: "Drums", label: "Kyle — Drums" },
+  { id: "france-id", name: "France", role: "Lead Vocals", label: "France — Lead Vocals" },
+  { id: "andrei-id", name: "Andrei", role: "Backup Vocals", label: "Andrei — Backup Vocals" },
+  { id: "dave-id", name: "Dave", role: "Keys 1", label: "Dave — Keys 1" },
+  { id: "rym-id", name: "Rym", role: "Keys 2", label: "Rym — Keys 2" },
+  { id: "lowell-id", name: "Lowell", role: "Bass", label: "Lowell — Bass" },
+  { id: "morley-id", name: "Morley", role: "Guitar 1 (Lead)", label: "Morley — Guitar 1 (Lead)" },
+  { id: "ned-id", name: "Ned", role: "Guitar 2 (Acoustic)", label: "Ned — Guitar 2 (Acoustic)" },
+]
+
+// Local mock storage key for offline / unauthenticated practice persistence
+const PRACTICE_STORAGE_KEY = "worshipflow_practice_status_v2"
+
+// Pre-seeded practice readiness from church worship team members
 export const DEFAULT_PRACTICE_STATUSES: PracticeStatusRecord[] = [
   {
     id: "ps-1",
     user_id: "france-id",
     user_name: "France",
-    instrument: "Vocals",
+    instrument: "Lead Vocals",
     setlist_id: "sl-nov15",
     song_id: "s1",
     song_title: "Thank God I'm Free",
@@ -42,6 +61,30 @@ export const DEFAULT_PRACTICE_STATUSES: PracticeStatusRecord[] = [
     confidence_rating: 5,
     private_notes: "Key of G memorized, vocal lead lines dialed in.",
     last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
+  },
+  {
+    id: "ps-1b",
+    user_id: "france-id",
+    user_name: "France",
+    instrument: "Lead Vocals",
+    setlist_id: "sl-nov15",
+    song_id: "s6",
+    song_title: "Jesus Be The Center",
+    status: "ready",
+    confidence_rating: 5,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+  },
+  {
+    id: "ps-1c",
+    user_id: "france-id",
+    user_name: "France",
+    instrument: "Lead Vocals",
+    setlist_id: "sl-nov15",
+    song_id: "s7",
+    song_title: "Shout To The Lord",
+    status: "ready",
+    confidence_rating: 5,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
   },
   {
     id: "ps-2",
@@ -70,19 +113,6 @@ export const DEFAULT_PRACTICE_STATUSES: PracticeStatusRecord[] = [
     last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
   },
   {
-    id: "ps-4",
-    user_id: "andrei-id",
-    user_name: "Andrei",
-    instrument: "Vocals",
-    setlist_id: "sl-nov15",
-    song_id: "s6",
-    song_title: "Jesus Be The Center",
-    status: "needs_work",
-    confidence_rating: 3,
-    private_notes: "Practicing 3rd harmony on chorus 2.",
-    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-  },
-  {
     id: "ps-5",
     user_id: "aeron-id",
     user_name: "Aeron",
@@ -94,6 +124,127 @@ export const DEFAULT_PRACTICE_STATUSES: PracticeStatusRecord[] = [
     confidence_rating: 3,
     private_notes: "Smooth cymbal swells into Chorus.",
     last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
+  },
+  {
+    id: "ps-k1",
+    user_id: "kyle-id",
+    user_name: "Kyle",
+    instrument: "Drums",
+    setlist_id: "sl-nov15",
+    song_id: "s1",
+    song_title: "Thank God I'm Free",
+    status: "ready",
+    confidence_rating: 4,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 10).toISOString(),
+  },
+  {
+    id: "ps-k2",
+    user_id: "kyle-id",
+    user_name: "Kyle",
+    instrument: "Drums",
+    setlist_id: "sl-nov15",
+    song_id: "s6",
+    song_title: "Jesus Be The Center",
+    status: "needs_work",
+    confidence_rating: 3,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 10).toISOString(),
+  },
+  {
+    id: "ps-4",
+    user_id: "andrei-id",
+    user_name: "Andrei",
+    instrument: "Backup Vocals",
+    setlist_id: "sl-nov15",
+    song_id: "s6",
+    song_title: "Jesus Be The Center",
+    status: "needs_work",
+    confidence_rating: 3,
+    private_notes: "Practicing 3rd harmony on chorus 2.",
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+  },
+  {
+    id: "ps-d1",
+    user_id: "dave-id",
+    user_name: "Dave",
+    instrument: "Keys 1",
+    setlist_id: "sl-nov15",
+    song_id: "s1",
+    song_title: "Thank God I'm Free",
+    status: "ready",
+    confidence_rating: 5,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 7).toISOString(),
+  },
+  {
+    id: "ps-d2",
+    user_id: "dave-id",
+    user_name: "Dave",
+    instrument: "Keys 1",
+    setlist_id: "sl-nov15",
+    song_id: "s6",
+    song_title: "Jesus Be The Center",
+    status: "ready",
+    confidence_rating: 5,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 7).toISOString(),
+  },
+  {
+    id: "ps-r1",
+    user_id: "rym-id",
+    user_name: "Rym",
+    instrument: "Keys 2",
+    setlist_id: "sl-nov15",
+    song_id: "s6",
+    song_title: "Jesus Be The Center",
+    status: "ready",
+    confidence_rating: 4,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 9).toISOString(),
+  },
+  {
+    id: "ps-l1",
+    user_id: "lowell-id",
+    user_name: "Lowell",
+    instrument: "Bass",
+    setlist_id: "sl-nov15",
+    song_id: "s1",
+    song_title: "Thank God I'm Free",
+    status: "ready",
+    confidence_rating: 4,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 11).toISOString(),
+  },
+  {
+    id: "ps-m1",
+    user_id: "morley-id",
+    user_name: "Morley",
+    instrument: "Guitar 1 (Lead)",
+    setlist_id: "sl-nov15",
+    song_id: "s1",
+    song_title: "Thank God I'm Free",
+    status: "ready",
+    confidence_rating: 5,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
+  },
+  {
+    id: "ps-m2",
+    user_id: "morley-id",
+    user_name: "Morley",
+    instrument: "Guitar 1 (Lead)",
+    setlist_id: "sl-nov15",
+    song_id: "s7",
+    song_title: "Shout To The Lord",
+    status: "needs_work",
+    confidence_rating: 3,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
+  },
+  {
+    id: "ps-n1",
+    user_id: "ned-id",
+    user_name: "Ned",
+    instrument: "Guitar 2 (Acoustic)",
+    setlist_id: "sl-nov15",
+    song_id: "s1",
+    song_title: "Thank God I'm Free",
+    status: "ready",
+    confidence_rating: 4,
+    last_practiced_at: new Date(Date.now() - 1000 * 60 * 60 * 14).toISOString(),
   },
 ]
 

@@ -11,6 +11,7 @@ interface PracticeCheckinBadgeProps {
   songId: string
   songTitle?: string
   currentStatus?: PracticeStatusType
+  userId?: string
   userName?: string
   instrument?: string
   onStatusChange?: (newStatus: PracticeStatusType) => void
@@ -22,8 +23,9 @@ export function PracticeCheckinBadge({
   songId,
   songTitle,
   currentStatus = "not_started",
-  userName = "Me",
-  instrument = "Band",
+  userId = "aeron-id",
+  userName = "Aeron",
+  instrument = "Drums",
   onStatusChange,
   size = "md",
 }: PracticeCheckinBadgeProps) {
@@ -43,7 +45,7 @@ export function PracticeCheckinBadge({
 
     try {
       await updatePracticeStatus({
-        userId: "current-user",
+        userId,
         userName,
         instrument,
         setlistId,
