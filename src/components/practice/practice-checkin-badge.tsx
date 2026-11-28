@@ -140,6 +140,9 @@ export function PracticeCheckinBadge({
         setlistId={setlistId}
         songId={songId}
         songTitle={songTitle}
+        userId={userId}
+        userName={userName}
+        instrument={instrument}
         initialNotes={savedNotes}
         currentStatus={status}
         onSaved={(record) => {

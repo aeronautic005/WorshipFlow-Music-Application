@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { NotebookPen, X, Check, Star, Sparkles, Lock } from "lucide-react"
+import { useEffect, useState } from "react"
+import { NotebookPen, X, Check, Star, Lock } from "lucide-react"
 import { updatePracticeStatus, type PracticeStatusRecord } from "@/lib/practice"
 import type { PracticeStatusType } from "@/types/database"
 
@@ -11,6 +11,9 @@ interface PrivateNotesModalProps {
   setlistId: string
   songId: string
   songTitle?: string
+  userId?: string
+  userName?: string
+  instrument?: string
   initialNotes?: string | null
   initialConfidence?: number
   currentStatus?: PracticeStatusType
@@ -18,12 +21,10 @@ interface PrivateNotesModalProps {
 }
 
 const QUICK_PRACTICE_CUES = [
-  "Review bridge transition & tempo",
-  "Memorize chord progression without sheet",
-  "Check vocal harmony 3rd above",
-  "Practice kick & snare groove at 128 bpm",
-  "Keyboard 2: string pad layer on chorus",
-  "Capo 2: play in D shapes for key of E",
+  "Review bridge transition",
+  "Check tempo & dynamics",
+  "Memorize chord progression",
+  "Watch leader cue on chorus",
 ]
 
 export function PrivateNotesModal({
@@ -32,6 +33,9 @@ export function PrivateNotesModal({
   setlistId,
   songId,
   songTitle,
+  userId = "aeron-id",
+  userName = "Aeron",
+  instrument = "Drums",
   initialNotes = "",
   initialConfidence = 3,
   currentStatus = "not_started",
@@ -40,6 +44,14 @@ export function PrivateNotesModal({
   const [notes, setNotes] = useState(initialNotes || "")
   const [confidence, setConfidence] = useState(initialConfidence)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    setNotes(initialNotes || "")
+  }, [initialNotes])
+
+  useEffect(() => {
+    setConfidence(initialConfidence)
+  }, [initialConfidence])
 
   if (!isOpen) return null
 
@@ -55,7 +67,9 @@ export function PrivateNotesModal({
     setSaving(true)
     try {
       const res = await updatePracticeStatus({
-        userId: "current-user",
+        userId,
+        userName,
+        instrument,
         setlistId,
         songId,
         songTitle,
@@ -73,17 +87,17 @@ export function PrivateNotesModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-md rounded-2xl border bg-card text-card-foreground shadow-2xl overflow-hidden space-y-4 p-5">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b pb-3">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="w-full max-w-md rounded-3xl border border-border bg-card text-foreground shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/70">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 rounded-2xl bg-secondary text-foreground shrink-0">
               <NotebookPen className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="font-bold text-sm">Personal Practice Notes</h3>
-              <p className="text-[11px] text-muted-foreground truncate max-w-[240px]">
+            <div className="min-w-0">
+              <h3 className="font-bold text-sm text-foreground">Personal Practice Notes</h3>
+              <p className="text-xs text-muted-foreground truncate">
                 {songTitle || "Song Practice"}
               </p>
             </div>
@@ -91,83 +105,86 @@ export function PrivateNotesModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition"
+            aria-label="Close modal"
+            className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Privacy Note */}
-        <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 text-[11px] text-muted-foreground">
-          <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span>These notes are private to you and only visible on your practice hub.</span>
-        </div>
+        {/* Body */}
+        <div className="p-6 space-y-5">
+          {/* Privacy Hint */}
+          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-secondary/50 text-xs text-muted-foreground">
+            <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span>Private to you — never visible to other teammates.</span>
+          </div>
 
-        {/* Confidence Rating */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-            <span>Readiness Confidence:</span>
-            <span className="text-primary font-mono text-xs">{confidence} of 5 Stars</span>
-          </label>
-          <div className="flex items-center gap-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setConfidence(star)}
-                className={`p-1.5 rounded-md transition ${
-                  star <= confidence
-                    ? "text-amber-500 hover:text-amber-600 scale-105"
-                    : "text-muted-foreground/30 hover:text-muted-foreground"
-                }`}
-                title={`Rate confidence ${star} stars`}
-              >
-                <Star className="w-5 h-5 fill-current" />
-              </button>
-            ))}
+          {/* Readiness Confidence */}
+          <div className="flex items-center justify-between px-4 py-3 rounded-2xl border border-border/80 bg-secondary/25">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Confidence</p>
+              <p className="text-[11px] text-muted-foreground">{confidence} of 5 stars</p>
+            </div>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setConfidence(star)}
+                  className={`p-1 rounded-full transition cursor-pointer ${
+                    star <= confidence
+                      ? "text-primary hover:opacity-80"
+                      : "text-muted-foreground/30 hover:text-muted-foreground/60"
+                  }`}
+                  title={`Rate confidence ${star} of 5`}
+                >
+                  <Star className="w-4.5 h-4.5 fill-current" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes Textarea */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-foreground block">
+              Instrument &amp; Vocal Reminders
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Write cues for yourself (e.g., snare rim-clicks on verse 1, drop out on bridge...)"
+              rows={4}
+              className="w-full text-xs p-3.5 rounded-2xl border border-border bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 resize-none leading-relaxed"
+            />
+          </div>
+
+          {/* Quick Add Cues */}
+          <div className="space-y-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+              Quick Add
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK_PRACTICE_CUES.map((snippet) => (
+                <button
+                  key={snippet}
+                  type="button"
+                  onClick={() => handleApplySnippet(snippet)}
+                  className="text-[11px] px-3 py-1.5 rounded-full border border-border bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition font-medium cursor-pointer"
+                >
+                  + {snippet}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Notes Textarea */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-foreground">
-            My Instrument / Vocal Reminders:
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="e.g. Watch leader's hand signal on chorus 2, snare rim-clicks on verse 1, practice key modulation..."
-            rows={4}
-            className="w-full text-xs p-3 rounded-xl border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
-          />
-        </div>
-
-        {/* Quick Snippets */}
-        <div className="space-y-1.5">
-          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-amber-500" />
-            Quick Reminders:
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {QUICK_PRACTICE_CUES.map((snippet) => (
-              <button
-                key={snippet}
-                type="button"
-                onClick={() => handleApplySnippet(snippet)}
-                className="text-[10px] px-2 py-1 rounded-md border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition font-medium"
-              >
-                + {snippet}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-border/70 bg-secondary/20">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-lg border text-xs font-medium hover:bg-muted transition text-muted-foreground hover:text-foreground"
+            className="px-4 py-2 rounded-full border border-border bg-card text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition cursor-pointer"
           >
             Cancel
           </button>
@@ -175,7 +192,7 @@ export function PrivateNotesModal({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition shadow-xs disabled:opacity-50 cursor-pointer"
           >
             <Check className="w-3.5 h-3.5" />
             <span>{saving ? "Saving..." : "Save Notes"}</span>
