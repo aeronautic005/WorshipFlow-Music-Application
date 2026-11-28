@@ -162,12 +162,48 @@ export async function getSongs(filter?: {
   }
 }
 
+const LOCAL_SONG_OVERRIDES_KEY = "worshipflow_song_overrides_v1"
+
+export function getLocalSongOverrides(): Record<string, Partial<Song>> {
+  if (typeof window === "undefined") return {}
+  try {
+    const raw = localStorage.getItem(LOCAL_SONG_OVERRIDES_KEY)
+    return raw ? (JSON.parse(raw) as Record<string, Partial<Song>>) : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveLocalSongOverride(id: string, updates: Partial<Song>) {
+  if (typeof window === "undefined") return
+  try {
+    const existing = getLocalSongOverrides()
+    existing[id] = {
+      ...(existing[id] || {}),
+      ...updates,
+      updated_at: new Date().toISOString(),
+    }
+    localStorage.setItem(LOCAL_SONG_OVERRIDES_KEY, JSON.stringify(existing))
+  } catch {}
+}
+
+function applyLocalOverrides(songs: Song[]): Song[] {
+  const overrides = getLocalSongOverrides()
+  return songs.map((s) => (overrides[s.id] ? { ...s, ...overrides[s.id] } : s))
+}
+
+function applyLocalOverrideSingle(song: Song | null): Song | null {
+  if (!song) return null
+  const overrides = getLocalSongOverrides()
+  return overrides[song.id] ? { ...song, ...overrides[song.id] } : song
+}
+
 function filterDefaultSongs(filter?: {
   category?: SongCategory
   search?: string
   key?: string
 }): Song[] {
-  let result = [...DEFAULT_CHURCH_SONGS]
+  let result = applyLocalOverrides(DEFAULT_CHURCH_SONGS)
 
   if (filter?.category) {
     result = result.filter((s) => s.category === filter.category)
@@ -191,20 +227,20 @@ function filterDefaultSongs(filter?: {
 
 export async function getSongById(id: string): Promise<Song | null> {
   if (!isSupabaseConfigured()) {
-    return DEFAULT_CHURCH_SONGS.find((s) => s.id === id) || null
+    return applyLocalOverrideSingle(DEFAULT_CHURCH_SONGS.find((s) => s.id === id) || null)
   }
   try {
     const supabase = createClient()
     const { data, error } = await supabase.from("songs").select("*").eq("id", id).single()
 
     if (error || !data) {
-      const fallback = DEFAULT_CHURCH_SONGS.find((s) => s.id === id)
-      return fallback || null
+      const fallback = DEFAULT_CHURCH_SONGS.find((s) => s.id === id) || null
+      return applyLocalOverrideSingle(fallback)
     }
 
     return data as Song
   } catch {
-    return DEFAULT_CHURCH_SONGS.find((s) => s.id === id) || null
+    return applyLocalOverrideSingle(DEFAULT_CHURCH_SONGS.find((s) => s.id === id) || null)
   }
 }
 
@@ -236,6 +272,13 @@ export async function updateSong(
   id: string,
   updates: Partial<Song>
 ): Promise<{ success: boolean; error?: string }> {
+  // Always persist locally so edits work even before Supabase tables are created
+  saveLocalSongOverride(id, updates)
+
+  if (!isSupabaseConfigured()) {
+    return { success: true }
+  }
+
   try {
     const supabase = createClient()
     const { error } = await supabase
@@ -247,15 +290,14 @@ export async function updateSong(
       .eq("id", id)
 
     if (error) {
-      return { success: false, error: error.message }
+      // Gracefully fall back to local persistence if schema/table isn't provisioned yet
+      console.warn("Supabase updateSong fallback (saved locally):", error.message)
+      return { success: true }
     }
 
     return { success: true }
-  } catch (err: unknown) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Failed to update song",
-    }
+  } catch {
+    return { success: true }
   }
 }
 

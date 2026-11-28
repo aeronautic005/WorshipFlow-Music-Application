@@ -1,6 +1,7 @@
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { Setlist, SetlistSong, SetlistStatus, SongCategory, SongSection } from "@/types/database"
 import { notifySetlistPublished } from "./notifications"
+import { getLocalSongOverrides } from "./songs"
 
 export interface FullSetlist extends Setlist {
   song_leader_name?: string
@@ -142,9 +143,23 @@ export const DEFAULT_CHURCH_SETLISTS: FullSetlist[] = [
   },
 ]
 
+function getEnrichedDefaultSetlists(): FullSetlist[] {
+  const overrides = getLocalSongOverrides()
+  return DEFAULT_CHURCH_SETLISTS.map((setlist) => ({
+    ...setlist,
+    songs: (setlist.songs || []).map((ss) => {
+      const localSong = overrides[ss.song_id]
+      return {
+        ...ss,
+        default_structure: localSong?.default_structure || ss.default_structure,
+      }
+    }),
+  }))
+}
+
 export async function getSetlists(): Promise<FullSetlist[]> {
   if (!isSupabaseConfigured()) {
-    return DEFAULT_CHURCH_SETLISTS
+    return getEnrichedDefaultSetlists()
   }
   try {
     const supabase = createClient()
@@ -163,7 +178,7 @@ export async function getSetlists(): Promise<FullSetlist[]> {
       .order("service_date", { ascending: false })
 
     if (error || !data || data.length === 0) {
-      return DEFAULT_CHURCH_SETLISTS
+      return getEnrichedDefaultSetlists()
     }
 
     return data.map((item: any) => ({
@@ -182,7 +197,7 @@ export async function getSetlists(): Promise<FullSetlist[]> {
       })),
     }))
   } catch {
-    return DEFAULT_CHURCH_SETLISTS
+    return getEnrichedDefaultSetlists()
   }
 }
 
