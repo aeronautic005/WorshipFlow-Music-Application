@@ -338,13 +338,18 @@ export default function LivePerformancePage() {
         </div>
       )}
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-6 space-y-6">
+      <main
+        className={`flex-1 w-full mx-auto px-4 py-6 space-y-6 transition-all ${
+          isLargeFont ? "max-w-5xl" : "max-w-4xl"
+        }`}
+      >
         <LiveSongView
           song={currentSong}
           songIndex={songIndex}
           totalSongs={songs.length}
           activeSectionIndex={sectionIndex}
           onSectionClick={goToSection}
+          isLargeFont={isLargeFont}
         />
 
         <SectionAdvanceControls
@@ -352,6 +357,7 @@ export default function LivePerformancePage() {
           activeIndex={sectionIndex}
           onPrev={prevSection}
           onNext={nextSection}
+          isLargeFont={isLargeFont}
         />
 
         <SongNavigator

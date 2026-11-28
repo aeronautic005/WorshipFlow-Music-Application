@@ -14,7 +14,7 @@ interface StructureMapProps {
   sections: (SongSection | StructureSectionItem)[]
   activeIndex?: number
   onSectionClick?: (index: number, section: SongSection | StructureSectionItem) => void
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "md" | "lg" | "xl"
   interactive?: boolean
   showArrows?: boolean
   bpm?: number | null
@@ -82,6 +82,7 @@ export function StructureMap({
           sm: "px-2.5 py-1 text-[11px]",
           md: "px-3 py-1.5 text-xs",
           lg: "px-3.5 py-2 text-sm",
+          xl: "px-4 py-2.5 text-base sm:text-lg",
         }[size]
 
         return (
