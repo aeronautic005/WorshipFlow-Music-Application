@@ -425,15 +425,19 @@ export function StructureEditor({
                     <button
                       type="button"
                       onClick={() => setActiveNoteSectionIndex(idx)}
-                      className={`inline-flex items-center justify-center gap-1 h-8 w-[78px] rounded-full border text-xs font-semibold transition cursor-pointer shrink-0 ${
-                        section.notes
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      className={`relative inline-flex items-center justify-center gap-1 h-8 w-[82px] rounded-full border border-border bg-background text-xs font-semibold hover:bg-secondary transition cursor-pointer shrink-0 ${
+                        section.notes ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                       }`}
-                      title={section.notes || "Add instrument cue notes"}
+                      title={section.notes ? `Saved cue: ${section.notes}` : "Add instrument cue notes"}
                     >
                       <MessageSquare className="w-3 h-3 shrink-0" />
-                      <span>{section.notes ? "Note" : "+ Note"}</span>
+                      <span>+ Note</span>
+                      {section.notes && (
+                        <span
+                          className="h-1.5 w-1.5 rounded-full bg-primary shrink-0"
+                          aria-label="Has saved note"
+                        />
+                      )}
                     </button>
 
                     {/* Move Up / Down & Delete */}
