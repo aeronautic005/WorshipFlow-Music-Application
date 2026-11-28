@@ -18,13 +18,13 @@ export function SongNavigator({ songs, currentIndex, onSelectSong }: SongNavigat
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 p-3 rounded-2xl border bg-card/80 backdrop-blur-xs shadow-xs text-xs">
+      <div className="flex items-center justify-between gap-3 p-3 rounded-3xl border border-border bg-card shadow-xs text-xs">
         {/* Prev Song */}
         <button
           type="button"
           disabled={!prevSong}
           onClick={() => onSelectSong(currentIndex - 1)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-background hover:bg-muted disabled:opacity-30 transition font-medium truncate max-w-[140px] sm:max-w-[200px]"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border border-border bg-secondary/70 hover:bg-secondary text-foreground disabled:opacity-35 transition font-semibold truncate max-w-[150px] sm:max-w-[220px] cursor-pointer disabled:cursor-not-allowed"
           title={prevSong ? `Go to previous song: ${prevSong.title}` : "First song in setlist"}
         >
           <ChevronLeft className="w-4 h-4 shrink-0" />
@@ -36,7 +36,7 @@ export function SongNavigator({ songs, currentIndex, onSelectSong }: SongNavigat
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 font-bold border border-primary/20 transition"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 font-bold transition cursor-pointer shadow-xs"
         >
           <ListMusic className="w-4 h-4" />
           <span>
@@ -49,8 +49,12 @@ export function SongNavigator({ songs, currentIndex, onSelectSong }: SongNavigat
           type="button"
           disabled={!nextSong}
           onClick={() => onSelectSong(currentIndex + 1)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-background hover:bg-muted disabled:opacity-30 transition font-medium truncate max-w-[140px] sm:max-w-[200px]"
-          title={nextSong ? `Next song: ${nextSong.title} (Key ${nextSong.assigned_key})` : "Last song in setlist"}
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-full border border-border bg-secondary/70 hover:bg-secondary text-foreground disabled:opacity-35 transition font-semibold truncate max-w-[150px] sm:max-w-[220px] cursor-pointer disabled:cursor-not-allowed"
+          title={
+            nextSong
+              ? `Next song: ${nextSong.title} (Key ${nextSong.assigned_key})`
+              : "Last song in setlist"
+          }
         >
           <span className="truncate hidden sm:inline">
             {nextSong ? `${nextSong.title} (${nextSong.assigned_key})` : "End"}
@@ -62,17 +66,17 @@ export function SongNavigator({ songs, currentIndex, onSelectSong }: SongNavigat
 
       {/* Setlist Drawer / Modal */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl border bg-card text-card-foreground p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-border bg-card text-card-foreground p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
                 <ListMusic className="w-4 h-4 text-primary" />
-                <h3 className="font-bold text-sm">Service Setlist Lineup</h3>
+                <h3 className="font-bold text-sm text-foreground">Service Setlist Lineup</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="p-1 rounded-md text-muted-foreground hover:text-foreground"
+                className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -91,32 +95,28 @@ export function SongNavigator({ songs, currentIndex, onSelectSong }: SongNavigat
                       onSelectSong(idx)
                       setDrawerOpen(false)
                     }}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition ${
+                    className={`w-full flex items-center justify-between p-3.5 rounded-2xl border text-left transition cursor-pointer ${
                       isCurrent
-                        ? "bg-primary/10 border-primary text-primary font-bold shadow-xs"
-                        : "bg-background/60 hover:bg-muted text-foreground border-border"
+                        ? "bg-primary/15 border-primary text-foreground font-bold"
+                        : "bg-secondary/50 hover:bg-secondary text-foreground border-border"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="font-mono text-xs w-5 text-muted-foreground">{idx + 1}.</span>
+                      <span className="text-xs font-bold w-5 text-muted-foreground">
+                        {idx + 1}.
+                      </span>
                       <div className="min-w-0">
-                        <p className="text-xs truncate font-semibold">{s.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{s.artist}</p>
+                        <p className="text-xs truncate font-bold">{s.title}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{s.artist}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                          isJoyful
-                            ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-                            : "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
-                        }`}
-                      >
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-card border border-border text-muted-foreground font-semibold">
                         {isJoyful ? "Joyful" : "Worship"}
                       </span>
-                      <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-muted">
-                        Key {s.assigned_key}
+                      <span className="font-bold text-xs px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                        {s.assigned_key}
                       </span>
                     </div>
                   </button>

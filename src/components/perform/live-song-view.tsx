@@ -2,7 +2,7 @@
 
 import type { SongSection } from "@/types/database"
 import { StructureMap } from "@/components/structure/structure-map"
-import { Flame, Heart, Clock } from "lucide-react"
+import { Sun, Feather, Clock } from "lucide-react"
 
 export interface LiveSong {
   id: string
@@ -35,39 +35,46 @@ export function LiveSongView({
 
   return (
     <div className="space-y-5">
-      {/* Song header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {/* Song Header Card */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0 space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Song {songIndex + 1} of {totalSongs}
           </p>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight truncate">{song.title}</h1>
-          <p className="text-sm text-muted-foreground">{song.artist}</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground truncate">
+            {song.title}
+          </h1>
+          <p className="text-sm font-medium text-muted-foreground">{song.artist}</p>
         </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <span className="px-4 py-2 rounded-xl bg-primary/15 border border-primary/30 text-primary font-mono font-extrabold text-2xl">
-            {song.assigned_key}
-          </span>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span
-              className={`inline-flex items-center gap-1 font-semibold ${
-                isJoyful ? "text-amber-500" : "text-blue-500"
-              }`}
-            >
-              {isJoyful ? <Flame className="h-3.5 w-3.5" /> : <Heart className="h-3.5 w-3.5" />}
-              {isJoyful ? "Joyful" : "Worship"}
+
+        {/* High-contrast Key & BPM Stat Tiles */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex flex-col items-center justify-center px-3.5 py-2 rounded-2xl border border-border bg-card min-w-[92px]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1">
+              {isJoyful ? <Sun className="h-3 w-3 text-primary" /> : <Feather className="h-3 w-3 text-primary" />}
+              <span>{isJoyful ? "Joyful" : "Worship"}</span>
             </span>
-            {song.bpm && (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" /> {song.bpm} BPM
+            {song.bpm ? (
+              <span className="text-sm font-extrabold text-foreground inline-flex items-center gap-1 mt-0.5">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                {song.bpm} BPM
               </span>
+            ) : (
+              <span className="text-xs font-semibold text-muted-foreground mt-0.5">—</span>
             )}
+          </div>
+
+          <div className="flex flex-col items-center justify-center px-5 py-2 rounded-2xl bg-primary text-primary-foreground min-w-[78px] shadow-xs">
+            <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
+              Key
+            </span>
+            <span className="text-2xl font-extrabold leading-tight">{song.assigned_key}</span>
           </div>
         </div>
       </div>
 
-      {/* Structure map */}
-      <div className="rounded-2xl border bg-card/60 p-4">
+      {/* Agreed Arrangement Blueprint Card */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-xs">
         <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
           Agreed Arrangement
         </p>

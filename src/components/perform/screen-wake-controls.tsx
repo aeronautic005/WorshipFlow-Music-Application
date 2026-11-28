@@ -81,15 +81,15 @@ export function ScreenWakeControls() {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {/* Wake Lock Button */}
       <button
         type="button"
         onClick={toggleWakeLock}
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold border transition ${
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
           isWakeLocked
-            ? "bg-amber-500/15 border-amber-500/30 text-amber-500"
-            : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
+            ? "bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-500/15 dark:border-amber-500/40 dark:text-amber-300"
+            : "bg-card border-border text-foreground hover:bg-secondary dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
         }`}
         title={
           isWakeLocked
@@ -105,7 +105,7 @@ export function ScreenWakeControls() {
       <button
         type="button"
         onClick={toggleFullscreen}
-        className="p-1 rounded-lg border bg-muted/40 text-muted-foreground hover:text-foreground transition"
+        className="p-1.5 rounded-full border bg-card border-border text-foreground hover:bg-secondary dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen Mode"}
         aria-label="Toggle Fullscreen"
       >

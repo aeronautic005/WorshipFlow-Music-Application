@@ -97,11 +97,11 @@ export function StructureMap({
               }
               className={`group relative inline-flex items-center gap-1.5 font-semibold rounded-md border transition-all select-none ${sizeClasses} ${
                 config.color.bg
-              } ${config.color.border} ${config.color.text} ${
+              } ${config.color.border} ${config.color.text} dark:border-slate-700 ${
                 interactive ? "cursor-pointer hover:scale-105 active:scale-95 shadow-xs" : "cursor-default"
               } ${
                 isActive
-                  ? `ring-2 ring-offset-2 ${config.color.activeRing} ring-offset-background scale-105 shadow-md`
+                  ? `ring-2 ring-offset-2 ${config.color.activeRing} dark:ring-sky-400 ring-offset-card scale-105 shadow-md`
                   : ""
               }`}
             >

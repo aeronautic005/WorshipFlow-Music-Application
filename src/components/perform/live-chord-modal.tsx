@@ -55,20 +55,20 @@ export function LiveChordModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-950 text-neutral-100 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="w-full max-w-2xl rounded-3xl border border-border bg-card text-foreground shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-neutral-800 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary/20 text-primary">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-secondary text-foreground">
               <FileCode className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold truncate max-w-[240px] sm:max-w-md">
+              <h2 className="text-base font-bold truncate max-w-[240px] sm:max-w-md text-foreground">
                 {songTitle}
               </h2>
-              <p className="text-xs text-neutral-400">
-                Assigned Key: <strong className="text-primary">{assignedKey}</strong>
+              <p className="text-xs text-muted-foreground">
+                Assigned Key: <strong className="text-foreground">{assignedKey}</strong>
                 {originalKey !== assignedKey ? ` (Orig: ${originalKey})` : ""}
               </p>
             </div>
@@ -78,14 +78,14 @@ export function LiveChordModal({
             <button
               type="button"
               onClick={() => setShowCapo(!showCapo)}
-              className="px-2.5 py-1.5 rounded-lg border border-neutral-800 text-xs font-semibold hover:bg-neutral-900 transition text-neutral-300"
+              className="px-3 py-1.5 rounded-full border border-border text-xs font-semibold hover:bg-secondary transition text-foreground cursor-pointer"
             >
               {showCapo ? "Hide Capo" : "Guitar Capo"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-900 transition"
+              className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition cursor-pointer"
               aria-label="Close chord sheet"
             >
               <X className="w-5 h-5" />
@@ -95,13 +95,13 @@ export function LiveChordModal({
 
         {/* Capo Calculator Drawer */}
         {showCapo && (
-          <div className="p-3 border-b border-neutral-800 bg-neutral-900/60 shrink-0">
+          <div className="p-3.5 border-b border-border bg-secondary/40 shrink-0">
             <CapoCalculator currentKey={currentKey} />
           </div>
         )}
 
         {/* Chord Sheet Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 select-text font-mono text-xs sm:text-sm leading-relaxed text-neutral-200">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 select-text font-mono text-xs sm:text-sm leading-relaxed text-foreground">
           {loading ? (
             <div className="flex items-center justify-center py-20 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin text-primary mr-2" />
@@ -113,12 +113,12 @@ export function LiveChordModal({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400 shrink-0 bg-neutral-900/40">
+        <div className="px-5 py-3.5 border-t border-border flex items-center justify-between text-xs text-muted-foreground shrink-0 bg-secondary/30">
           <span>Press &apos;C&apos; or Escape to close</span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition"
+            className="px-5 py-1.5 rounded-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition cursor-pointer"
           >
             Done
           </button>

@@ -211,30 +211,33 @@ export default function LivePerformancePage() {
     <div
       className={`min-h-screen flex flex-col transition-colors duration-200 ${
         isStageDark
-          ? "bg-black text-neutral-100"
-          : "bg-background text-foreground"
+          ? "dark bg-[#070B14] text-slate-100"
+          : "bg-[#F4F6FA] text-foreground"
       } ${isLargeFont ? "text-lg" : "text-base"}`}
     >
-      {/* Top bar */}
-      <header className={`flex items-center justify-between px-4 py-2.5 border-b gap-2 flex-wrap ${
-        isStageDark ? "border-neutral-800 bg-neutral-950/80" : "border-border bg-background/80"
-      }`}>
+      {/* Top Stage Control Bar */}
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border bg-card gap-3 flex-wrap shadow-2xs">
         <div className="flex items-center gap-3">
           <Link
             href="/perform"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-secondary/60 text-xs font-semibold text-foreground hover:bg-secondary transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" /> Exit
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Exit</span>
           </Link>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-red-500">
-            <Radio className="h-3.5 w-3.5 animate-pulse" />
+
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DC2626] text-white text-[11px] font-bold tracking-wide">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+            </span>
             <span>LIVE</span>
           </div>
         </div>
 
-        {/* Sync Status & Role Switcher */}
-        <div className="flex items-center gap-2">
-          {/* Stage Theme Toggle */}
+        {/* Controls & Sync Status */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Dark Stage / Light Mode + Large Text Toggle */}
           <StageThemeToggle
             isStageDark={isStageDark}
             onToggleDark={() => setIsStageDark(!isStageDark)}
@@ -244,21 +247,21 @@ export default function LivePerformancePage() {
 
           {/* Connection badge */}
           <div
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-semibold border ${
               isConnected
-                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                : "bg-muted text-muted-foreground border-border"
+                ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                : "bg-secondary text-muted-foreground border-border"
             }`}
-            title={isConnected ? "Realtime sync connected" : "Connecting to band sync..."}
+            title={isConnected ? "Realtime sync connected" : "Running locally (no live Supabase channel)"}
           >
             {isConnected ? (
               <>
-                <Wifi className="w-3 h-3 text-emerald-500" />
+                <Wifi className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Band Synced</span>
               </>
             ) : (
               <>
-                <WifiOff className="w-3 h-3 text-muted-foreground" />
+                <WifiOff className="w-3.5 h-3.5" />
                 <span>Local</span>
               </>
             )}
@@ -268,15 +271,15 @@ export default function LivePerformancePage() {
           <button
             type="button"
             onClick={() => setIsController(!isController)}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition cursor-pointer ${
               isController
-                ? "bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400"
-                : "bg-muted/50 border-border text-muted-foreground hover:text-foreground"
+                ? "bg-amber-500/20 border-amber-500/40 text-amber-800 dark:text-amber-300"
+                : "bg-secondary border-border text-foreground hover:bg-muted"
             }`}
             title={
               isController
-                ? "You are controlling position for the band"
-                : "Following song leader's position"
+                ? "You are broadcasting section changes to the band"
+                : "Following the song leader's position (click to take control)"
             }
           >
             {isController ? (
@@ -286,7 +289,7 @@ export default function LivePerformancePage() {
               </>
             ) : (
               <>
-                <Eye className="w-3.5 h-3.5" />
+                <Eye className="w-3.5 h-3.5 text-muted-foreground" />
                 <span>Following</span>
               </>
             )}
@@ -296,7 +299,7 @@ export default function LivePerformancePage() {
           <button
             type="button"
             onClick={() => setShowChordsModal(true)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition shadow-xs cursor-pointer"
             title="Open chord sheet (press 'C')"
           >
             <FileCode className="w-3.5 h-3.5" />
@@ -304,7 +307,7 @@ export default function LivePerformancePage() {
           </button>
 
           {/* Live Service Duration Timer */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/40 border border-border/40 font-mono text-xs font-bold text-foreground">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border text-xs font-bold text-foreground">
             <Timer className="w-3.5 h-3.5 text-primary" />
             <span>
               {Math.floor(elapsedSeconds / 60)}:
@@ -317,7 +320,7 @@ export default function LivePerformancePage() {
           <button
             type="button"
             onClick={handleEndSession}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-600/15 border border-red-500/30 text-red-500 hover:bg-red-600/25 transition"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-[#DC2626] hover:bg-[#B91C1C] text-white transition cursor-pointer"
             title="Log service completion and view recap"
           >
             <span>Finish</span>
