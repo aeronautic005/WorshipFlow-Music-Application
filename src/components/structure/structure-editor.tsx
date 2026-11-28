@@ -335,7 +335,7 @@ export function StructureEditor({
                           name: section.name.startsWith(config.label) ? typeConfig.label : section.name,
                         })
                       }}
-                      className="h-8 text-xs font-semibold px-2.5 rounded-full border border-border bg-secondary/60 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
+                      className="h-8 w-[124px] text-xs font-semibold px-2.5 rounded-full border border-border bg-secondary/60 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
                     >
                       {Object.values(SECTION_CONFIGS).map((c) => (
                         <option key={c.type} value={c.type}>
@@ -350,43 +350,45 @@ export function StructureEditor({
                       disabled={isLocked}
                       value={section.name}
                       onChange={(e) => handleUpdate(idx, { name: e.target.value })}
-                      className="h-8 text-xs font-semibold px-3 rounded-full border border-border bg-background text-foreground flex-1 min-w-[110px] max-w-[180px] focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="h-8 text-xs font-semibold px-3 rounded-full border border-border bg-background text-foreground flex-1 min-w-[100px] focus:outline-none focus:ring-1 focus:ring-primary"
                       placeholder="e.g. Verse 1"
                     />
                   </div>
 
                   {/* Right: Repeats, Bars, Dynamics, Note, Order & Delete */}
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap shrink-0">
                     {/* Repeats Stepper */}
-                    <div className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-border bg-background text-xs">
-                      <span className="text-[10px] font-medium text-muted-foreground mr-0.5">Rep</span>
-                      <button
-                        type="button"
-                        disabled={isLocked}
-                        onClick={() =>
-                          handleUpdate(idx, { repeats: Math.max(1, (section.repeats || 1) - 1) })
-                        }
-                        className="w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-secondary text-foreground font-bold cursor-pointer disabled:opacity-40"
-                      >
-                        -
-                      </button>
-                      <span className="font-bold text-foreground w-5 text-center">
-                        {section.repeats || 1}x
-                      </span>
-                      <button
-                        type="button"
-                        disabled={isLocked}
-                        onClick={() =>
-                          handleUpdate(idx, { repeats: Math.min(6, (section.repeats || 1) + 1) })
-                        }
-                        className="w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-secondary text-foreground font-bold cursor-pointer disabled:opacity-40"
-                      >
-                        +
-                      </button>
+                    <div className="inline-flex items-center justify-between h-8 w-[104px] px-2.5 rounded-full border border-border bg-background text-xs shrink-0">
+                      <span className="text-[10px] font-medium text-muted-foreground">Rep</span>
+                      <div className="inline-flex items-center gap-0.5">
+                        <button
+                          type="button"
+                          disabled={isLocked}
+                          onClick={() =>
+                            handleUpdate(idx, { repeats: Math.max(1, (section.repeats || 1) - 1) })
+                          }
+                          className="w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-secondary text-foreground font-bold cursor-pointer disabled:opacity-40"
+                        >
+                          -
+                        </button>
+                        <span className="font-bold text-foreground w-5 text-center">
+                          {section.repeats || 1}x
+                        </span>
+                        <button
+                          type="button"
+                          disabled={isLocked}
+                          onClick={() =>
+                            handleUpdate(idx, { repeats: Math.min(6, (section.repeats || 1) + 1) })
+                          }
+                          className="w-5 h-5 inline-flex items-center justify-center rounded-full hover:bg-secondary text-foreground font-bold cursor-pointer disabled:opacity-40"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
 
                     {/* Bars Input */}
-                    <div className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-border bg-background text-xs">
+                    <div className="inline-flex items-center justify-between h-8 w-[84px] px-2.5 rounded-full border border-border bg-background text-xs shrink-0">
                       <span className="text-[10px] font-medium text-muted-foreground">Bars</span>
                       <input
                         type="number"
@@ -398,7 +400,7 @@ export function StructureEditor({
                         onChange={(e) =>
                           handleUpdate(idx, { bars: parseInt(e.target.value) || 4 })
                         }
-                        className="w-10 text-center font-bold text-xs text-foreground bg-transparent focus:outline-none"
+                        className="w-9 text-center font-bold text-xs text-foreground bg-transparent focus:outline-none"
                       />
                     </div>
 
@@ -410,7 +412,7 @@ export function StructureEditor({
                       onChange={(e) =>
                         handleUpdate(idx, { dynamics: e.target.value as SectionDynamics })
                       }
-                      className="h-8 text-xs font-medium px-2.5 rounded-full border border-border bg-background text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="h-8 w-[134px] text-xs font-medium px-2.5 rounded-full border border-border bg-background text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary shrink-0"
                     >
                       {Object.entries(DYNAMICS_CONFIG).map(([key, val]) => (
                         <option key={key} value={key}>
@@ -423,14 +425,14 @@ export function StructureEditor({
                     <button
                       type="button"
                       onClick={() => setActiveNoteSectionIndex(idx)}
-                      className={`inline-flex items-center gap-1 h-8 px-3 rounded-full border text-xs font-semibold transition cursor-pointer ${
+                      className={`inline-flex items-center justify-center gap-1 h-8 w-[78px] rounded-full border text-xs font-semibold transition cursor-pointer shrink-0 ${
                         section.notes
                           ? "bg-primary text-primary-foreground border-primary"
                           : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                       }`}
                       title={section.notes || "Add instrument cue notes"}
                     >
-                      <MessageSquare className="w-3 h-3" />
+                      <MessageSquare className="w-3 h-3 shrink-0" />
                       <span>{section.notes ? "Note" : "+ Note"}</span>
                     </button>
 
