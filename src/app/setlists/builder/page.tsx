@@ -39,6 +39,9 @@ const SONG_LEADERS = [
   { id: "france-id", name: "France" },
   { id: "maegan-id", name: "Maegan" },
   { id: "andrei-id", name: "Andrei" },
+  { id: "roxh-id", name: "Roxh" },
+  { id: "argel-id", name: "Argel" },
+  { id: "deanne-id", name: "Deanne" },
 ]
 
 const BACKUP_VOCALISTS = [
