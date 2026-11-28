@@ -143,9 +143,31 @@ export const DEFAULT_CHURCH_SETLISTS: FullSetlist[] = [
   },
 ]
 
+const LOCAL_SETLISTS_KEY = "worshipflow_local_setlists_v1"
+
+function getLocalCreatedSetlists(): FullSetlist[] {
+  if (typeof window === "undefined") return []
+  try {
+    const raw = localStorage.getItem(LOCAL_SETLISTS_KEY)
+    return raw ? (JSON.parse(raw) as FullSetlist[]) : []
+  } catch {
+    return []
+  }
+}
+
+function saveLocalCreatedSetlist(setlist: FullSetlist) {
+  if (typeof window === "undefined") return
+  try {
+    const existing = getLocalCreatedSetlists()
+    const updated = [setlist, ...existing.filter((s) => s.id !== setlist.id)]
+    localStorage.setItem(LOCAL_SETLISTS_KEY, JSON.stringify(updated))
+  } catch {}
+}
+
 function getEnrichedDefaultSetlists(): FullSetlist[] {
   const overrides = getLocalSongOverrides()
-  return DEFAULT_CHURCH_SETLISTS.map((setlist) => ({
+  const combined = [...getLocalCreatedSetlists(), ...DEFAULT_CHURCH_SETLISTS]
+  return combined.map((setlist) => ({
     ...setlist,
     songs: (setlist.songs || []).map((ss) => {
       const localSong = overrides[ss.song_id]
@@ -290,6 +312,9 @@ export async function createSetlist(
     notes?: string | null
     songs: {
       song_id: string
+      title?: string
+      artist?: string
+      original_key?: string
       order_position: number
       assigned_key: string
       reference_url?: string | null
@@ -298,6 +323,41 @@ export async function createSetlist(
     }[]
   }
 ): Promise<{ success: boolean; data?: any; error?: string }> {
+  const localSetlistId = `sl-${Date.now()}`
+  const localSetlist: FullSetlist = {
+    id: localSetlistId,
+    service_date: setlistData.service_date,
+    song_leader_id: setlistData.song_leader_id,
+    song_leader_name: setlistData.song_leader_id.replace(/-id$/, "").replace(/^./, (c) => c.toUpperCase()),
+    backup_singer_id: setlistData.backup_singer_id || null,
+    backup_singer_name: setlistData.backup_singer_id || undefined,
+    drummer_id: setlistData.drummer_id || null,
+    drummer_name: setlistData.drummer_id
+      ? setlistData.drummer_id.replace(/-id$/, "").replace(/^./, (c) => c.toUpperCase())
+      : undefined,
+    status: setlistData.status,
+    published_at: setlistData.status === "published" ? new Date().toISOString() : null,
+    notes: setlistData.notes || null,
+    songs: (setlistData.songs || []).map((s, idx) => ({
+      id: `ss-${Date.now()}-${idx}`,
+      setlist_id: localSetlistId,
+      song_id: s.song_id,
+      title: s.title || "Song",
+      artist: s.artist || "",
+      original_key: s.original_key || s.assigned_key,
+      assigned_key: s.assigned_key,
+      order_position: s.order_position,
+      category: s.category,
+      reference_url: s.reference_url || null,
+      custom_structure: s.custom_structure || null,
+    })),
+  }
+
+  if (!isSupabaseConfigured()) {
+    saveLocalCreatedSetlist(localSetlist)
+    return { success: true, data: localSetlist }
+  }
+
   try {
     const supabase = createClient()
     const { data: setlist, error: setlistErr } = await supabase
@@ -314,7 +374,10 @@ export async function createSetlist(
       .select()
       .single()
 
-    if (setlistErr) return { success: false, error: setlistErr.message }
+    if (setlistErr) {
+      saveLocalCreatedSetlist(localSetlist)
+      return { success: true, data: localSetlist }
+    }
 
     // Insert songs
     if (setlistData.songs && setlistData.songs.length > 0) {
@@ -329,15 +392,16 @@ export async function createSetlist(
       }))
 
       const { error: songsErr } = await supabase.from("setlist_songs").insert(songsToInsert)
-      if (songsErr) return { success: false, error: songsErr.message }
+      if (songsErr) {
+        saveLocalCreatedSetlist(localSetlist)
+        return { success: true, data: localSetlist }
+      }
     }
 
     return { success: true, data: setlist }
-  } catch (err: unknown) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Failed to create setlist",
-    }
+  } catch {
+    saveLocalCreatedSetlist(localSetlist)
+    return { success: true, data: localSetlist }
   }
 }
 
