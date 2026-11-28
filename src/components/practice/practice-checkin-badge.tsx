@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CheckCircle2, AlertCircle, Circle, Loader2, NotebookPen } from "lucide-react"
+import { CheckCircle2, AlertCircle, XCircle, Loader2, NotebookPen } from "lucide-react"
 import type { PracticeStatusType } from "@/types/database"
 import { updatePracticeStatus, type PracticeStatusRecord } from "@/lib/practice"
 import { PrivateNotesModal } from "./private-notes-modal"
@@ -102,16 +102,16 @@ export function PracticeCheckinBadge({
         type="button"
         disabled={loading}
         onClick={() => handleSelectStatus("not_started")}
-        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-medium transition cursor-pointer ${
+        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
           isSmall ? "text-[10px]" : "text-xs"
         } ${
           status === "not_started"
-            ? "bg-card text-foreground shadow-2xs"
+            ? "bg-red-600 text-white shadow-xs"
             : "text-muted-foreground hover:bg-card hover:text-foreground"
         }`}
         title="Haven't practiced yet"
       >
-        <Circle className={isSmall ? "w-2.5 h-2.5" : "w-3 h-3"} />
+        <XCircle className={isSmall ? "w-3 h-3" : "w-3.5 h-3.5"} />
         <span className="hidden sm:inline">Not Started</span>
       </button>
 
