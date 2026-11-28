@@ -44,6 +44,9 @@ const SONG_LEADERS = [
 const BACKUP_VOCALISTS = [
   { id: "", name: "None / Solo" },
   { id: "andrei-id", name: "Andrei" },
+  { id: "roxh-id", name: "Roxh" },
+  { id: "argel-id", name: "Argel" },
+  { id: "deanne-id", name: "Deanne" },
   { id: "france-id", name: "France" },
   { id: "maegan-id", name: "Maegan" },
 ]
@@ -78,7 +81,11 @@ function BuilderContent() {
 
   const [serviceDate, setServiceDate] = useState(searchParams.get("date") || "")
   const [songLeaderId, setSongLeaderId] = useState(searchParams.get("leader") || "france-id")
-  const [backupSingerId, setBackupSingerId] = useState(searchParams.get("backup") || "")
+  const [backupSingers, setBackupSingers] = useState<[string, string, string]>(() => {
+    const initial = searchParams.get("backup") || ""
+    const parts = initial ? initial.split(",").map((s) => s.trim()) : []
+    return [parts[0] || "", parts[1] || "", parts[2] || ""]
+  })
   const [drummerId, setDrummerId] = useState(searchParams.get("drummer") || "aeron-id")
   const [notes, setNotes] = useState(searchParams.get("notes") || "")
 
@@ -98,7 +105,18 @@ function BuilderContent() {
         if (existing) {
           setServiceDate(existing.service_date)
           setSongLeaderId(existing.song_leader_id || "france-id")
-          setBackupSingerId(existing.backup_singer_id || "")
+          const rawBackups = existing.backup_singer_name || existing.backup_singer_id || ""
+          const parsedBackups = rawBackups
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .map((val) => {
+              const found = BACKUP_VOCALISTS.find(
+                (v) => v.id === val || v.name.toLowerCase() === val.toLowerCase()
+              )
+              return found ? found.id : ""
+            })
+          setBackupSingers([parsedBackups[0] || "", parsedBackups[1] || "", parsedBackups[2] || ""])
           setDrummerId(existing.drummer_id || "aeron-id")
           setNotes(existing.notes || "")
           setSelectedSongs(
@@ -226,10 +244,16 @@ function BuilderContent() {
     setSaving(true)
     setError(null)
 
+    const selectedBackupIds = backupSingers.filter(Boolean)
+    const selectedBackupNames = selectedBackupIds
+      .map((id) => BACKUP_VOCALISTS.find((v) => v.id === id)?.name || id)
+      .join(", ")
+
     const payload = {
       service_date: serviceDate,
       song_leader_id: songLeaderId,
-      backup_singer_id: backupSingerId || null,
+      backup_singer_id: selectedBackupIds[0] || null,
+      backup_singer_name: selectedBackupNames || null,
       drummer_id: drummerId || null,
       status,
       notes: notes.trim() || null,
@@ -430,7 +454,7 @@ function BuilderContent() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           {/* Service Date */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -466,26 +490,6 @@ function BuilderContent() {
             </select>
           </div>
 
-          {/* Backup Vocalist */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Mic2 className="h-3.5 w-3.5" />
-              <span>Backup Vocals</span>
-            </label>
-            <select
-              aria-label="Backup vocalist"
-              value={backupSingerId}
-              onChange={(e) => setBackupSingerId(e.target.value)}
-              className="w-full h-10 px-3.5 rounded-2xl border border-border bg-secondary/35 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-            >
-              {BACKUP_VOCALISTS.map((v) => (
-                <option key={v.id || "none"} value={v.id}>
-                  {v.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Drummer Rotation */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -504,6 +508,39 @@ function BuilderContent() {
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+
+        {/* Backup Vocals (3 Weekly Slots) */}
+        <div className="space-y-1.5 pt-1">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Mic2 className="h-3.5 w-3.5" />
+            <span>Backup Vocals (Up to 3)</span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[0, 1, 2].map((slotIdx) => (
+              <div key={slotIdx} className="flex items-center gap-2 rounded-2xl border border-border bg-secondary/35 px-3 h-10">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0">
+                  BV {slotIdx + 1}
+                </span>
+                <select
+                  aria-label={`Backup vocalist ${slotIdx + 1}`}
+                  value={backupSingers[slotIdx]}
+                  onChange={(e) => {
+                    const updated: [string, string, string] = [...backupSingers]
+                    updated[slotIdx] = e.target.value
+                    setBackupSingers(updated)
+                  }}
+                  className="w-full bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer"
+                >
+                  {BACKUP_VOCALISTS.map((v) => (
+                    <option key={v.id || "none"} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
           </div>
         </div>
 

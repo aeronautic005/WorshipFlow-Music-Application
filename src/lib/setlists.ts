@@ -307,6 +307,7 @@ export async function createSetlist(
     service_date: string
     song_leader_id: string
     backup_singer_id?: string | null
+    backup_singer_name?: string | null
     drummer_id?: string | null
     status: SetlistStatus
     notes?: string | null
@@ -330,7 +331,7 @@ export async function createSetlist(
     song_leader_id: setlistData.song_leader_id,
     song_leader_name: setlistData.song_leader_id.replace(/-id$/, "").replace(/^./, (c) => c.toUpperCase()),
     backup_singer_id: setlistData.backup_singer_id || null,
-    backup_singer_name: setlistData.backup_singer_id || undefined,
+    backup_singer_name: setlistData.backup_singer_name || setlistData.backup_singer_id || undefined,
     drummer_id: setlistData.drummer_id || null,
     drummer_name: setlistData.drummer_id
       ? setlistData.drummer_id.replace(/-id$/, "").replace(/^./, (c) => c.toUpperCase())
